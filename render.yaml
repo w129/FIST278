@@ -1,0 +1,11 @@
+# Configuración Render — Web Service estático (Vite SPA)
+services:
+  - type: web
+    name: fist278
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
