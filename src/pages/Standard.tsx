@@ -33,7 +33,7 @@ export function Standard() {
           <Award size={20} color="#000" />
           <h3 style={{ marginTop: 8 }}>Autoridad</h3>
           <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
-            Solo HashCod emite certificados HVC
+            Solo hashcod emite certificados HVC
           </p>
         </div>
         <div className="card">
@@ -94,10 +94,10 @@ export function Standard() {
       </div>
 
       <div className="card">
-        <h3>Certificado HashCod de Validación (HVC) + clave</h3>
+        <h3>Certificado hashcod de Validación (HVC) + clave</h3>
         <p className="muted">
           El certificado <strong>debe subirse</strong> a la plataforma y presentar una{' '}
-          <strong>clave HashCod</strong> con este formato exacto (solo <code>|</code> y{' '}
+          <strong>clave hashcod</strong> con este formato exacto (solo <code>|</code> y{' '}
           <code>-</code>):
         </p>
         <div className="formula mono" style={{ fontSize: '0.72rem', wordBreak: 'break-all' }}>
@@ -108,18 +108,18 @@ export function Standard() {
         </p>
         <ul className="muted" style={{ marginTop: 0 }}>
           <li>Certificado subido con clave en formato &gt; |…|-…| &lt;</li>
-          <li>Emisor HashCod / estándar FIST278</li>
+          <li>Emisor hashcod / estándar FIST278</li>
           <li>Vínculo a token (serial / hashes) cuando se declare</li>
           <li>Vigente (no expirado ni revocado)</li>
           <li>Revisión humana marcada al validar</li>
         </ul>
         <div className="formula mono">
-          Pass ⇔ clave_HashCod_formato_OK ∧ HVC ∧ integridad ∧ human
+          Pass ⇔ clave_hashcod_formato_OK ∧ HVC ∧ integridad ∧ human
         </div>
         <p className="muted" style={{ marginBottom: 0, fontSize: '0.85rem' }}>
-          Flujo: detalle del token → pegar/subir clave o archivo → «Subir certificado HashCod» →
+          Flujo: detalle del token → pegar/subir clave o archivo → «Subir certificado hashcod» →
           validar. (La lógica interna del sistema de claves se ampliará según especificación
-          HashCod.)
+          hashcod.)
         </p>
       </div>
     </div>

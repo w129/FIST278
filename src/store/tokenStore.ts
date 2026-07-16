@@ -63,7 +63,7 @@ export async function runValidation(
 }
 
 /**
- * Emite Certificado HashCod (HVC) y lo adjunta al token.
+ * Emite Certificado hashcod (HVC) y lo adjunta al token.
  * Requerido por FIST278 para que la validación pueda dar pass.
  */
 export async function issueAndAttachHashCodCert(
@@ -92,7 +92,7 @@ export async function issueAndAttachHashCodCert(
 }
 
 /**
- * Sube certificado HashCod: el archivo/texto DEBE presentar clave
+ * Sube certificado hashcod: el archivo/texto DEBE presentar clave
  * > |||||------|---|-|-|-|||…| <
  */
 export async function uploadAndAttachHashCodCert(
@@ -226,16 +226,16 @@ export function assertHex(h: string): boolean {
     const { tokens: next } = await createTokenizedAsset(list, s);
     list = next;
   }
-  // Demo: emitir Certificado HashCod + validar + sellar
+  // Demo: emitir Certificado hashcod + validar + sellar
   if (list[0]) {
     const withCert = await issueAndAttachHashCodCert(list, list[0].id, {
-      subject: 'Demo HashCod · FIST278',
-      issuedBy: 'HashCod International Standards Authority',
+      subject: 'Demo hashcod · FIST278',
+      issuedBy: 'hashcod International Standards Authority',
     });
     list = withCert.tokens;
     const r = await runValidation(list, list[0].id, {
       humanApproved: true,
-      humanNotes: 'Demo seed: conformidad FIST278 con Certificado HashCod',
+      humanNotes: 'Demo seed: conformidad FIST278 con Certificado hashcod',
     });
     list = r.tokens;
     try {

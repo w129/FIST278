@@ -32,7 +32,7 @@ export type ValidationGateId =
   | 'pqc_seal'
   | 'human_review';
 
-/** Certificado HashCod de Validación (HVC) — obligatorio para pass FIST278 */
+/** Certificado hashcod de Validación (HVC) — obligatorio para pass FIST278 */
 export type HashCodCertificate = {
   id: string;
   /** Serial legible HVC-FIST278-YEAR-##### */
@@ -50,13 +50,13 @@ export type HashCodCertificate = {
   subject: string;
   issuedAt: string;
   expiresAt: string;
-  /** Firma de autoridad HashCod (cadena SHA-256) */
+  /** Firma de autoridad hashcod (cadena SHA-256) */
   signature: string;
   status: 'valid' | 'expired' | 'revoked';
   issuedBy: string;
   mark: string;
   /**
-   * Clave HashCod obligatoria para validar en la plataforma.
+   * Clave hashcod obligatoria para validar en la plataforma.
    * Formato exacto: > |||||------|---|-|-|-|||----||||…| <
    * Solo caracteres | y - entre los delimitadores > y <.
    */
@@ -128,8 +128,8 @@ export type AssetToken = {
   latestValidation?: ValidationReport;
   linkedProjectId?: string;
   /**
-   * Certificado HashCod (HVC). Obligatorio para conformidad FIST278 (pass).
-   * Emitido únicamente por autoridad HashCod.
+   * Certificado hashcod (HVC). Obligatorio para conformidad FIST278 (pass).
+   * Emitido únicamente por autoridad hashcod.
    */
   hashcodCertificate?: HashCodCertificate;
   /** Sello PQC simulado / commitment post-quantum ready */

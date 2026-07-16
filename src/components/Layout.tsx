@@ -38,7 +38,7 @@ export function Layout() {
             </div>
             <div>
               <h1>FIST278</h1>
-              <p>HashCod International Standard</p>
+              <p>hashcod International Standard</p>
             </div>
           </div>
 
@@ -57,7 +57,7 @@ export function Layout() {
           </nav>
 
           <div className="sidebar-footer">
-            <strong>Certified by HashCod</strong>
+            <strong>Certified by hashcod</strong>
             <div style={{ marginTop: 6 }}>
               Estándar internacional FIST278
               <br />

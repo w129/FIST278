@@ -100,10 +100,10 @@ function TokenDetailView({
     setMsg('');
     try {
       const raw = uploadText.trim() || pasteKey.trim();
-      if (!raw) throw new Error('Pega la clave HashCod o el contenido del certificado.');
+      if (!raw) throw new Error('Pega la clave hashcod o el contenido del certificado.');
       await uploadHashCodCert(token.id, raw, { subject: certSubject });
       setMsg(
-        'Certificado HashCod subido. Clave en formato > |…|-…| < aceptada. Ejecuta la validación.',
+        'Certificado hashcod subido. Clave en formato > |…|-…| < aceptada. Ejecuta la validación.',
       );
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Error al subir certificado');
@@ -129,7 +129,7 @@ function TokenDetailView({
         hashcodKey: keyParse.ok ? keyParse.key : undefined,
       });
       setMsg(
-        'Certificado HashCod emitido con clave en formato de plataforma. Ejecuta la validación FIST278.',
+        'Certificado hashcod emitido con clave en formato de plataforma. Ejecuta la validación FIST278.',
       );
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'No se pudo emitir el certificado');
@@ -172,8 +172,8 @@ function TokenDetailView({
         : `Integridad FALLÓ: content=${r.contentOk} meta=${r.metadataOk} commit=${r.commitmentOk}`;
     const cv = await verifyHashCodCertificate(token.hashcodCertificate, token);
     line += cv.valid
-      ? ` · Certificado HashCod VÁLIDO (${token.hashcodCertificate?.certSerial}).`
-      : ` · Certificado HashCod NO válido: ${cv.reasons[0] ?? 'ausente'}`;
+      ? ` · Certificado hashcod VÁLIDO (${token.hashcodCertificate?.certSerial}).`
+      : ` · Certificado hashcod NO válido: ${cv.reasons[0] ?? 'ausente'}`;
     setIntegrity(line);
   }
 
@@ -224,11 +224,11 @@ function TokenDetailView({
             <StatusBadge status={token.status} />
             <span className="badge">{STANDARD_MARK}</span>
             {hasCert && keyOk ? (
-              <span className="badge success">HashCod HVC · clave OK</span>
+              <span className="badge success">hashcod HVC · clave OK</span>
             ) : hasCert ? (
               <span className="badge danger">HVC sin clave válida</span>
             ) : (
-              <span className="badge danger">Sin certificado HashCod</span>
+              <span className="badge danger">Sin certificado hashcod</span>
             )}
             <span className="badge neutral">{token.asset.kind}</span>
             <span className="badge neutral mono">{token.asset.modelId}</span>
@@ -255,14 +255,14 @@ function TokenDetailView({
         </div>
       )}
 
-      {/* Certificado HashCod — subida + clave obligatoria */}
+      {/* Certificado hashcod — subida + clave obligatoria */}
       <div className="card" style={{ marginBottom: '1.25rem', borderWidth: 3 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div>
-            <p className="kicker">Autoridad HashCod · clave obligatoria</p>
+            <p className="kicker">Autoridad hashcod · clave obligatoria</p>
             <h3 style={{ margin: 0 }}>
               <Award size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-              Certificado HashCod (subir + clave)
+              Certificado hashcod (subir + clave)
             </h3>
             <p className="muted" style={{ margin: '0.5rem 0 0', maxWidth: '72ch' }}>
               Para validar en la plataforma el certificado <strong>debe subirse</strong> y
@@ -293,7 +293,7 @@ function TokenDetailView({
 
           <div className="form-group">
             <label>
-              Clave HashCod (obligatoria) — debe decir el valor en forma &gt; |||||------|…| &lt;
+              Clave hashcod (obligatoria) — debe decir el valor en forma &gt; |||||------|…| &lt;
             </label>
             <textarea
               className="mono"
@@ -324,7 +324,7 @@ function TokenDetailView({
               className="mono"
               value={uploadText}
               onChange={(e) => setUploadText(e.target.value)}
-              placeholder={`{\n  "issuer": "HashCod",\n  "hashcodKey": "${HASHCOD_KEY_EXAMPLE}",\n  "standard": "FIST278"\n}`}
+              placeholder={`{\n  "issuer": "hashcod",\n  "hashcodKey": "${HASHCOD_KEY_EXAMPLE}",\n  "standard": "FIST278"\n}`}
               style={{ minHeight: 100, fontSize: '0.78rem' }}
             />
           </div>
@@ -336,7 +336,7 @@ function TokenDetailView({
               disabled={busy}
               onClick={onUploadCert}
             >
-              <Award size={16} /> Subir certificado HashCod
+              <Award size={16} /> Subir certificado hashcod
             </button>
             <button type="button" className="btn btn-ghost" disabled={busy} onClick={onIssueCert}>
               Emitir con esta clave (local)
@@ -472,7 +472,7 @@ function TokenDetailView({
             Pipeline de validación FIST278
           </h3>
           <p className="muted" style={{ fontSize: '0.88rem' }}>
-            10 gates. <strong>Gate crítico:</strong> Certificado HashCod. Sin HVC válido no hay{' '}
+            10 gates. <strong>Gate crítico:</strong> Certificado hashcod. Sin HVC válido no hay{' '}
             <code>pass</code>.
           </p>
 
@@ -487,7 +487,7 @@ function TokenDetailView({
             >
               <strong>Bloqueo normativo FIST278-4</strong>
               <p className="muted" style={{ margin: '0.35rem 0 0' }}>
-                Sube un certificado HashCod cuya clave sea del tipo{' '}
+                Sube un certificado hashcod cuya clave sea del tipo{' '}
                 <code>&gt; |||||------|---|-|-|-|||…| &lt;</code>. Sin esa clave la plataforma no
                 puede dar pass.
               </p>

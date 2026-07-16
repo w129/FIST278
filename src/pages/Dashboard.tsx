@@ -31,12 +31,12 @@ export function Dashboard() {
     <div>
       <div className="page-header">
         <div>
-          <p className="kicker">FIST278 · HashCod International Standard</p>
+          <p className="kicker">FIST278 · hashcod International Standard</p>
           <h2>Tokenizar y validar activos generados por IA</h2>
           <p className="subtitle">
-            Estándar internacional publicado por <strong>HashCod</strong>. Tokeniza outputs de IA
+            Estándar internacional publicado por <strong>hashcod</strong>. Tokeniza outputs de IA
             (SHA-256 + commitment) y valídalos con pipeline multi-gate. La aprobación (
-            <strong>pass</strong>) exige un <strong>Certificado HashCod (HVC)</strong> vigente.
+            <strong>pass</strong>) exige un <strong>Certificado hashcod (HVC)</strong> vigente.
           </p>
         </div>
         <Link to="/tokenize" className="btn btn-primary">
@@ -97,7 +97,7 @@ export function Dashboard() {
             </div>
             <div className="card">
               <div className="badge">03</div>
-              <h3>Certificado HashCod</h3>
+              <h3>Certificado hashcod</h3>
               <p className="muted" style={{ margin: 0 }}>
                 HVC obligatorio · FIST278-4
               </p>
@@ -165,7 +165,7 @@ export function Dashboard() {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Link to="/standard" className="btn btn-ghost">
-                Estándar FIST278 · HashCod
+                Estándar FIST278 · hashcod
               </Link>
               <Link to="/registry" className="btn btn-ghost">
                 <Coins size={16} /> Registro de tokens
@@ -181,10 +181,10 @@ export function Dashboard() {
           <div className="card">
             <h3>Modelo de commitment</h3>
             <div className="formula mono">
-              Pass ⇔ HVC_HashCod válido ∧ integridad ∧ human ∧ score≥75
+              Pass ⇔ HVC_hashcod válido ∧ integridad ∧ human ∧ score≥75
             </div>
             <p className="muted" style={{ marginBottom: 0, fontSize: '0.85rem' }}>
-              Sin Certificado HashCod no hay conformidad FIST278. Ver norma en Estándar FIST278.
+              Sin Certificado hashcod no hay conformidad FIST278. Ver norma en Estándar FIST278.
             </p>
           </div>
         </section>

@@ -70,11 +70,11 @@ export function Tokenize() {
     <div>
       <div className="page-header">
         <div>
-          <p className="kicker">FIST278 · HashCod</p>
+          <p className="kicker">FIST278 · hashcod</p>
           <h2>Tokenizar activos generados por IA</h2>
           <p className="subtitle">
             Pega el output de un modelo y genera un token bajo el estándar internacional FIST278
-            (HashCod). Después emite el <strong>Certificado HashCod</strong> y valida: sin
+            (hashcod). Después emite el <strong>Certificado hashcod</strong> y valida: sin
             certificado no hay pass.
           </p>
         </div>
@@ -105,7 +105,7 @@ export function Tokenize() {
           <ShieldCheck size={18} color="#000000" />
           <h3 style={{ marginTop: 8 }}>3. Certificar & validar</h3>
           <p className="muted" style={{ margin: 0 }}>
-            HVC HashCod · 10 gates · pass solo con certificado
+            HVC hashcod · 10 gates · pass solo con certificado
           </p>
         </div>
       </div>

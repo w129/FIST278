@@ -1,8 +1,8 @@
 /**
- * Certificados HashCod (HVC) para conformidad FIST278.
+ * Certificados hashcod (HVC) para conformidad FIST278.
  *
  * REGLA DE PLATAFORMA:
- * El certificado DEBE subirse (o emitirse) presentando una clave HashCod
+ * El certificado DEBE subirse (o emitirse) presentando una clave hashcod
  * en el formato:
  *   > |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <
  *
@@ -69,12 +69,12 @@ export function buildCertPayload(input: {
   return JSON.stringify(ordered);
 }
 
-export async function signHashCodPayload(payload: string): Promise<string> {
+export async function signhashcodPayload(payload: string): Promise<string> {
   return sha256Hex(`${HASHCOD_ROOT_MATERIAL}|${payload}|HASHCOD-SIGN`);
 }
 
 /**
- * Emite HVC con clave HashCod en formato > |…|-…| <
+ * Emite HVC con clave hashcod en formato > |…|-…| <
  */
 export async function issueHashCodCertificate(
   token: AssetToken,
@@ -103,7 +103,7 @@ export async function issueHashCodCertificate(
 
   const keyParse = parseHashCodKey(hashcodKey);
   if (!keyParse.ok) {
-    throw new Error(keyParse.error || 'Clave HashCod inválida al emitir certificado');
+    throw new Error(keyParse.error || 'Clave hashcod inválida al emitir certificado');
   }
   hashcodKey = keyParse.key;
 
@@ -118,7 +118,7 @@ export async function issueHashCodCertificate(
     standardVersion: FIST278_STANDARD.version,
     hashcodKey,
   });
-  const signature = await signHashCodPayload(payload);
+  const signature = await signhashcodPayload(payload);
   const fingerprint = signature.slice(0, 16).toUpperCase();
 
   return {
@@ -140,14 +140,14 @@ export async function issueHashCodCertificate(
     signature,
     status: 'valid',
     issuedBy: opts.issuedBy?.trim() || HASHCOD.legalName,
-    mark: 'FIST278 · Certified by HashCod',
+    mark: 'FIST278 · Certified by hashcod',
     hashcodKey,
     source: opts.hashcodKey ? 'uploaded' : 'issued',
   };
 }
 
 /**
- * Construye certificado a partir de subida (archivo/texto) + clave HashCod obligatoria.
+ * Construye certificado a partir de subida (archivo/texto) + clave hashcod obligatoria.
  */
 export async function certificateFromUpload(
   token: AssetToken,
@@ -161,13 +161,13 @@ export async function certificateFromUpload(
   if (!parsed.ok || !parsed.hashcodKey) {
     throw new Error(
       parsed.error ||
-        `El certificado debe presentar una clave HashCod como:\n${HASHCOD_KEY_EXAMPLE}`,
+        `El certificado debe presentar una clave hashcod como:\n${HASHCOD_KEY_EXAMPLE}`,
     );
   }
 
   const keyParse = parseHashCodKey(parsed.hashcodKey);
   if (!keyParse.ok) {
-    throw new Error(keyParse.error || 'Clave HashCod inválida');
+    throw new Error(keyParse.error || 'Clave hashcod inválida');
   }
 
   const now = new Date();
@@ -215,7 +215,7 @@ export async function certificateFromUpload(
   // Para validación de plataforma el requisito crítico es la clave en formato correcto.
   let signature = parsed.meta.signature || '';
   if (!signature) {
-    signature = await signHashCodPayload(payload);
+    signature = await signhashcodPayload(payload);
   }
 
   return {
@@ -237,7 +237,7 @@ export async function certificateFromUpload(
     signature,
     status: 'valid',
     issuedBy: HASHCOD.legalName,
-    mark: 'FIST278 · Certified by HashCod',
+    mark: 'FIST278 · Certified by hashcod',
     hashcodKey,
     source: 'uploaded',
     rawUpload: rawUpload.slice(0, 8000),
@@ -262,7 +262,7 @@ export type CertVerification = {
 };
 
 /**
- * Verifica certificado + clave HashCod (formato > |…|-…| < es OBLIGATORIO).
+ * Verifica certificado + clave hashcod (formato > |…|-…| < es OBLIGATORIO).
  */
 export async function verifyHashCodCertificate(
   cert: HashCodCertificate | undefined | null,
@@ -286,7 +286,7 @@ export async function verifyHashCodCertificate(
       valid: false,
       score: 0,
       reasons: [
-        'Falta Certificado HashCod. Debe subirse presentando clave en formato: > |||||------|---|…| <',
+        'Falta Certificado hashcod. Debe subirse presentando clave en formato: > |||||------|---|…| <',
       ],
       checks: emptyChecks,
     };
@@ -294,13 +294,13 @@ export async function verifyHashCodCertificate(
 
   const hasCertificate = true;
 
-  // CRÍTICO: formato de clave HashCod
+  // CRÍTICO: formato de clave hashcod
   const keyParse = parseHashCodKey(cert.hashcodKey);
   const hashcodKeyFormat = keyParse.ok;
   if (!hashcodKeyFormat) {
     reasons.push(
       keyParse.error ||
-        `Clave HashCod ausente o inválida. Debe ser: ${HASHCOD_KEY_EXAMPLE}`,
+        `Clave hashcod ausente o inválida. Debe ser: ${HASHCOD_KEY_EXAMPLE}`,
     );
   }
 
@@ -317,10 +317,10 @@ export async function verifyHashCodCertificate(
   const exp = Date.parse(cert.expiresAt);
   const notExpired =
     (!cert.expiresAt || (Number.isFinite(exp) && exp > now)) && cert.status !== 'expired';
-  if (!notExpired) reasons.push('Certificado HashCod expirado o no vigente.');
+  if (!notExpired) reasons.push('Certificado hashcod expirado o no vigente.');
 
   const notRevoked = cert.status !== 'revoked';
-  if (!notRevoked) reasons.push('Certificado HashCod revocado.');
+  if (!notRevoked) reasons.push('Certificado hashcod revocado.');
 
   const commitmentMatch =
     !cert.commitmentHash || cert.commitmentHash === token.commitmentHash;
@@ -347,7 +347,7 @@ export async function verifyHashCodCertificate(
         standardVersion: cert.standardVersion || FIST278_STANDARD.version,
         hashcodKey: cert.hashcodKey,
       });
-      const expected = await signHashCodPayload(payload);
+      const expected = await signhashcodPayload(payload);
       signatureOk = cert.signature === expected;
       if (!signatureOk) reasons.push('Firma de certificado emitido no verifica.');
     } catch {
@@ -390,11 +390,11 @@ export async function verifyHashCodCertificate(
 
   if (valid) {
     reasons.push(
-      `Clave HashCod válida · ${cert.certSerial || 'HVC'} · ${cert.hashcodKey.slice(0, 24)}…`,
+      `Clave hashcod válida · ${cert.certSerial || 'HVC'} · ${cert.hashcodKey.slice(0, 24)}…`,
     );
   } else if (!hashcodKeyFormat) {
     reasons.unshift(
-      'La plataforma solo valida certificados HashCod cuya clave sea del tipo: > |||||------|---|-|-|-|||…| <',
+      'La plataforma solo valida certificados hashcod cuya clave sea del tipo: > |||||------|---|-|-|-|||…| <',
     );
   }
 

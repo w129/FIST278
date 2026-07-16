@@ -1,6 +1,6 @@
 /**
  * Motor de validación multi-gate FIST278.
- * Gate crítico: Certificado HashCod (sin él no hay pass).
+ * Gate crítico: Certificado hashcod (sin él no hay pass).
  */
 
 import type {
@@ -27,7 +27,7 @@ const GATE_META: Record<ValidationGateId, { name: string; weight: number }> = {
   policy: { name: 'Política y licencia', weight: 0.06 },
   provenance: { name: 'Procedencia (modelo/steward)', weight: 0.08 },
   hashcod_certificate: {
-    name: 'Certificado HashCod (FIST278)',
+    name: 'Certificado hashcod (FIST278)',
     weight: 0.2,
   },
   pqc_seal: { name: 'Preparación de sello PQC', weight: 0.05 },
@@ -43,7 +43,7 @@ export type ValidateOptions = {
 
 /**
  * Pipeline de validación FIST278.
- * Pass solo si: integridad + originalidad + Certificado HashCod válido + revisión humana.
+ * Pass solo si: integridad + originalidad + Certificado hashcod válido + revisión humana.
  */
 export async function validateToken(
   token: AssetToken,
@@ -210,7 +210,7 @@ export async function validateToken(
     weight: GATE_META.pqc_seal.weight,
     details: sealed
       ? `Sellado con ${token.pqcSeal!.algorithm}`
-      : 'Sin sello PQC aún — se puede sellar tras pass certificado HashCod.',
+      : 'Sin sello PQC aún — se puede sellar tras pass certificado hashcod.',
   });
 
   // 10. Human review
@@ -244,7 +244,7 @@ export async function validateToken(
   const passCount = gates.filter((g) => g.passed).length;
   let decision: ValidationReport['decision'] = 'fail';
 
-  // Pass SOLO con certificado HashCod + human + sin críticos fallidos
+  // Pass SOLO con certificado hashcod + human + sin críticos fallidos
   if (!criticalFail && certCheck.valid && composite >= 75 && human) {
     decision = 'pass';
   } else if (!criticalFail && composite >= 55) {
@@ -257,18 +257,18 @@ export async function validateToken(
   if (!certCheck.valid) {
     decision = decision === 'pass' ? 'fail' : decision;
     if (decision === 'conditional' && composite >= 75) {
-      // keep conditional but message will explain HashCod required for pass
+      // keep conditional but message will explain hashcod required for pass
     }
   }
 
   const summary =
     decision === 'pass'
-      ? `Conformidad FIST278 alcanzada (${passCount}/${gates.length} gates). Certificado HashCod ${token.hashcodCertificate?.certSerial ?? ''} verificado por ${HASHCOD.org}. Listo para sello PQC.`
+      ? `Conformidad FIST278 alcanzada (${passCount}/${gates.length} gates). Certificado hashcod ${token.hashcodCertificate?.certSerial ?? ''} verificado por ${HASHCOD.org}. Listo para sello PQC.`
       : !certCheck.valid
-        ? `Validación incompleta (${composite}/100). REQUIERE Certificado HashCod válido (estándar internacional FIST278 por ${HASHCOD.org}). Emite el certificado antes de revalidar.`
+        ? `Validación incompleta (${composite}/100). REQUIERE Certificado hashcod válido (estándar internacional FIST278 por ${HASHCOD.org}). Emite el certificado antes de revalidar.`
         : decision === 'conditional'
           ? `Validación condicional (${composite}/100). Completa revisión humana o corrige gates fallidos. Estándar: ${FIST278_STANDARD.id}.`
-          : `Validación fallida (${composite}/100). Revisa integridad, originalidad, certificado HashCod o calidad.`;
+          : `Validación fallida (${composite}/100). Revisa integridad, originalidad, certificado hashcod o calidad.`;
 
   return {
     id: uid('val'),

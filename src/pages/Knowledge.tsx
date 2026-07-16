@@ -1,15 +1,15 @@
 const SECTIONS = [
   {
-    title: 'FIST278 — Estándar internacional HashCod',
-    body: `FIST278 es el Framework for International Standardization of Tokenized AI Assets, publicado por HashCod (HashCod International Standards Authority). Es la norma de referencia para tokenizar y validar activos generados por IA. La marca de conformidad es «FIST278 · Certified by HashCod».`,
+    title: 'FIST278 — Estándar internacional hashcod',
+    body: `FIST278 es el Framework for International Standardization of Tokenized AI Assets, publicado por hashcod (hashcod International Standards Authority). Es la norma de referencia para tokenizar y validar activos generados por IA. La marca de conformidad es «FIST278 · Certified by hashcod».`,
   },
   {
-    title: 'Certificado HashCod obligatorio + clave',
-    body: `Según FIST278-4, el certificado HashCod DEBE subirse y presentar una clave con formato: > |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <  (solo | y - entre > y <). Sin esa clave la plataforma no da pass. Flujo: Token → pegar/subir clave o archivo .json/.txt → Subir certificado → Validar con aprobación humana.`,
+    title: 'Certificado hashcod obligatorio + clave',
+    body: `Según FIST278-4, el certificado hashcod DEBE subirse y presentar una clave con formato: > |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <  (solo | y - entre > y <). Sin esa clave la plataforma no da pass. Flujo: Token → pegar/subir clave o archivo .json/.txt → Subir certificado → Validar con aprobación humana.`,
   },
   {
     title: 'Función base: tokenizar y validar activos IA',
-    body: `1) Ingiere contenido + modelo + prompt + steward. 2) Tokeniza (SHA-256 + commitment FIST278-v1). 3) Emite Certificado HashCod (HVC). 4) Valida 10 gates (gate crítico HVC). 5) Si pass → sello PQC-ready. Pipeline IP y Math Lab son capas posteriores.`,
+    body: `1) Ingiere contenido + modelo + prompt + steward. 2) Tokeniza (SHA-256 + commitment FIST278-v1). 3) Emite Certificado hashcod (HVC). 4) Valida 10 gates (gate crítico HVC). 5) Si pass → sello PQC-ready. Pipeline IP y Math Lab son capas posteriores.`,
   },
   {
     title: 'Formalismo matemático del motor',

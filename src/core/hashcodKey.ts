@@ -1,5 +1,5 @@
 /**
- * Claves HashCod — formato obligatorio para validar en la plataforma FIST278.
+ * Claves hashcod — formato obligatorio para validar en la plataforma FIST278.
  *
  * Formato canónico:
  *   > |||||------|---|-|-|-|||----||||...| <
@@ -11,12 +11,12 @@
  *   > |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <
  */
 
-/** Ejemplo normativo de clave HashCod (documentación / plantilla) */
+/** Ejemplo normativo de clave hashcod (documentación / plantilla) */
 export const HASHCOD_KEY_EXAMPLE =
   '> |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <';
 
 /**
- * Regex de una clave HashCod completa.
+ * Regex de una clave hashcod completa.
  * Permite espacios opcionales alrededor de los delimitadores > y <.
  */
 export const HASHCOD_KEY_REGEX = />\s([|\-]+)\s</g;
@@ -46,7 +46,7 @@ export function normalizeHashCodKey(raw: string): string {
 }
 
 /**
- * Valida formato de clave HashCod.
+ * Valida formato de clave hashcod.
  * Para validar en la plataforma el valor DEBE ser de la forma:
  *   > |…|-…| <
  */
@@ -59,7 +59,7 @@ export function parseHashCodKey(raw: string | undefined | null): HashCodKeyParse
       pipeCount: 0,
       dashCount: 0,
       length: 0,
-      error: 'Falta clave HashCod. Formato: > |||||------|---|-|…| <',
+      error: 'Falta clave hashcod. Formato: > |||||------|---|-|…| <',
     };
   }
   const key = normalizeHashCodKey(raw);
@@ -72,7 +72,7 @@ export function parseHashCodKey(raw: string | undefined | null): HashCodKeyParse
       dashCount: 0,
       length: 0,
       error:
-        'Clave HashCod inválida. Debe ser exactamente: > [solo | y -] <  (ej. > |||||------|---|-|-|-|||----||||…| <)',
+        'Clave hashcod inválida. Debe ser exactamente: > [solo | y -] <  (ej. > |||||------|---|-|-|-|||----||||…| <)',
     };
   }
   const body = key.slice(2, -2).trim(); // strip "> " and " <"
@@ -84,7 +84,7 @@ export function parseHashCodKey(raw: string | undefined | null): HashCodKeyParse
       pipeCount: 0,
       dashCount: 0,
       length: body.length,
-      error: 'Clave HashCod demasiado corta (mín. 16 símbolos |/-).',
+      error: 'Clave hashcod demasiado corta (mín. 16 símbolos |/-).',
     };
   }
   if (!body.includes('|') || !body.includes('-')) {
@@ -108,7 +108,7 @@ export function parseHashCodKey(raw: string | undefined | null): HashCodKeyParse
   };
 }
 
-/** Extrae la primera clave HashCod embebida en un texto o JSON */
+/** Extrae la primera clave hashcod embebida en un texto o JSON */
 export function extractHashCodKeyFromText(text: string): string | null {
   const re = />\s[|\-]+\s</g;
   const m = text.match(re);
@@ -124,7 +124,7 @@ export function extractAllHashCodKeys(text: string): string[] {
 }
 
 /**
- * Codifica un hex (hash) a cuerpo de clave HashCod (solo | y -).
+ * Codifica un hex (hash) a cuerpo de clave hashcod (solo | y -).
  * bit 1 → |  bit 0 → -
  */
 export function hexToKeyBody(hex: string, minLen = 64): string {
@@ -151,7 +151,7 @@ export function wrapHashCodKey(body: string): string {
 }
 
 /**
- * Genera una clave HashCod determinista a partir de commitment + content hash.
+ * Genera una clave hashcod determinista a partir de commitment + content hash.
  * (Emisión local; el formato es el mismo que exige la validación por subida.)
  */
 export function deriveHashCodKey(commitmentHash: string, contentHash: string): string {
@@ -170,7 +170,7 @@ export function deriveHashCodKey(commitmentHash: string, contentHash: string): s
 
 /**
  * Parsea un archivo de certificado subido (JSON o texto plano).
- * Debe presentar al menos una clave HashCod en el formato > |…| <
+ * Debe presentar al menos una clave hashcod en el formato > |…| <
  */
 export function parseUploadedCertificate(raw: string): {
   ok: boolean;
@@ -248,7 +248,7 @@ export function parseUploadedCertificate(raw: string): {
       hashcodKey: null,
       allKeys,
       meta,
-      error: `No se encontró clave HashCod. Debe presentar un valor como:\n${HASHCOD_KEY_EXAMPLE}`,
+      error: `No se encontró clave hashcod. Debe presentar un valor como:\n${HASHCOD_KEY_EXAMPLE}`,
     };
   }
 
