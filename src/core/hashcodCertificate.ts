@@ -304,11 +304,14 @@ export async function verifyHashCodCertificate(
     );
   }
 
+  const issuerNorm = (cert.issuer || '').toLowerCase();
   const issuer =
-    cert.issuer === HASHCOD.org ||
+    issuerNorm === HASHCOD.org.toLowerCase() ||
+    issuerNorm === 'hashcod' ||
     cert.issuerId === HASHCOD.rootAuthorityId ||
+    cert.issuerId?.toLowerCase?.().includes('hashcod') ||
     cert.source === 'uploaded';
-  if (!issuer) reasons.push(`Emisor no autorizado: ${cert.issuer}`);
+  if (!issuer) reasons.push(`Emisor no autorizado: ${cert.issuer} (se exige hashcod)`);
 
   const standard = cert.standard === FIST278_STANDARD.id || !cert.standard;
   if (!standard) reasons.push(`Estándar incorrecto: ${cert.standard}`);
