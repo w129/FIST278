@@ -1,6 +1,6 @@
 /**
- * Motor de validación multi-gate de tokens de activos IA.
- * Función base: validar antes de sellar / promover a IP.
+ * Motor de validación multi-gate FIST278.
+ * Gate crítico: Certificado HashCod (sin él no hay pass).
  */
 
 import type {
@@ -11,35 +11,39 @@ import type {
 } from '../types/token';
 import { verifyTokenIntegrity } from './tokenize';
 import { jaccardWordTrigrams } from './features';
+import { verifyHashCodCertificate } from './hashcodCertificate';
+import { FIST278_STANDARD, HASHCOD } from '../data/standard';
 
 function uid(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-const GATE_META: Record<
-  ValidationGateId,
-  { name: string; weight: number }
-> = {
-  integrity: { name: 'Integridad criptográfica', weight: 0.18 },
-  structure: { name: 'Estructura del activo', weight: 0.12 },
-  ai_disclosure: { name: 'Divulgación de IA', weight: 0.1 },
-  originality: { name: 'Originalidad vs registro', weight: 0.16 },
-  quality: { name: 'Calidad de contenido', weight: 0.12 },
-  policy: { name: 'Política y licencia', weight: 0.08 },
-  provenance: { name: 'Procedencia (modelo/steward)', weight: 0.1 },
-  pqc_seal: { name: 'Preparación de sello PQC', weight: 0.06 },
-  human_review: { name: 'Revisión humana', weight: 0.08 },
+const GATE_META: Record<ValidationGateId, { name: string; weight: number }> = {
+  integrity: { name: 'Integridad criptográfica', weight: 0.14 },
+  structure: { name: 'Estructura del activo', weight: 0.1 },
+  ai_disclosure: { name: 'Divulgación de IA', weight: 0.08 },
+  originality: { name: 'Originalidad vs registro', weight: 0.12 },
+  quality: { name: 'Calidad de contenido', weight: 0.1 },
+  policy: { name: 'Política y licencia', weight: 0.06 },
+  provenance: { name: 'Procedencia (modelo/steward)', weight: 0.08 },
+  hashcod_certificate: {
+    name: 'Certificado HashCod (FIST278)',
+    weight: 0.2,
+  },
+  pqc_seal: { name: 'Preparación de sello PQC', weight: 0.05 },
+  human_review: { name: 'Revisión humana', weight: 0.07 },
 };
 
 export type ValidateOptions = {
   humanApproved?: boolean;
   humanNotes?: string;
   minContentChars?: number;
-  originalityThreshold?: number; // max jaccard similarity allowed
+  originalityThreshold?: number;
 };
 
 /**
- * Ejecuta el pipeline completo de validación sobre un token.
+ * Pipeline de validación FIST278.
+ * Pass solo si: integridad + originalidad + Certificado HashCod válido + revisión humana.
  */
 export async function validateToken(
   token: AssetToken,
@@ -60,9 +64,10 @@ export async function validateToken(
     passed: integScore === 100,
     score: integScore,
     weight: GATE_META.integrity.weight,
-    details: integrity.contentOk && integrity.commitmentOk
-      ? 'Hashes de contenido, metadata y commitment coinciden.'
-      : `Fallo integridad: content=${integrity.contentOk} meta=${integrity.metadataOk} commit=${integrity.commitmentOk}`,
+    details:
+      integrity.contentOk && integrity.commitmentOk
+        ? 'Hashes de contenido, metadata y commitment coinciden (FIST278-3).'
+        : `Fallo integridad: content=${integrity.contentOk} meta=${integrity.metadataOk} commit=${integrity.commitmentOk}`,
     evidence: token.contentHash.slice(0, 16) + '…',
   });
 
@@ -101,7 +106,7 @@ export async function validateToken(
     details: `modelo=${hasModel} prompt_hash=${hasPrompt} steward=${hasSteward}`,
   });
 
-  // 4. Originalidad (Jaccard trigramas vs otros tokens)
+  // 4. Originalidad
   let maxSim = 0;
   let nearest = '';
   for (const other of registry) {
@@ -119,7 +124,6 @@ export async function validateToken(
   }
   const thr = opts.originalityThreshold ?? 0.42;
   const origScore = Math.round(100 * Math.max(0, 1 - maxSim / Math.max(thr, 0.01) * 0.7));
-  // penalize extreme AI template density as "low originality signal"
   const adjOrig = Math.round(origScore * (1 - 0.35 * f.aiPhraseSignal));
   gates.push({
     gateId: 'originality',
@@ -153,7 +157,8 @@ export async function validateToken(
   // 6. Política
   const licenseOk = token.asset.licenseIntent !== 'undecided';
   const titleOk = token.asset.title.trim().length >= 4;
-  const policyScore = (licenseOk ? 50 : 15) + (titleOk ? 30 : 0) + (token.asset.tags.length ? 20 : 5);
+  const policyScore =
+    (licenseOk ? 50 : 15) + (titleOk ? 30 : 0) + (token.asset.tags.length ? 20 : 5);
   gates.push({
     gateId: 'policy',
     name: GATE_META.policy.name,
@@ -178,9 +183,25 @@ export async function validateToken(
     details: `${token.asset.modelId} · ${token.asset.steward}`,
   });
 
-  // 8. PQC readiness (sello o stack declarado)
+  // 8. CERTIFICADO HASHCOD (crítico — FIST278-4)
+  const certCheck = await verifyHashCodCertificate(token.hashcodCertificate, token);
+  gates.push({
+    gateId: 'hashcod_certificate',
+    name: GATE_META.hashcod_certificate.name,
+    passed: certCheck.valid,
+    score: certCheck.score,
+    weight: GATE_META.hashcod_certificate.weight,
+    details: certCheck.reasons.join(' '),
+    evidence: token.hashcodCertificate?.certSerial ?? 'SIN-CERTIFICADO',
+  });
+
+  // 9. PQC
   const sealed = Boolean(token.pqcSeal);
-  const pqcScore = sealed ? 100 : token.status === 'tokenized' || token.status === 'validating' ? 55 : 40;
+  const pqcScore = sealed
+    ? 100
+    : token.status === 'tokenized' || token.status === 'validating'
+      ? 55
+      : 40;
   gates.push({
     gateId: 'pqc_seal',
     name: GATE_META.pqc_seal.name,
@@ -189,10 +210,10 @@ export async function validateToken(
     weight: GATE_META.pqc_seal.weight,
     details: sealed
       ? `Sellado con ${token.pqcSeal!.algorithm}`
-      : 'Sin sello PQC aún — se puede sellar tras validar.',
+      : 'Sin sello PQC aún — se puede sellar tras pass certificado HashCod.',
   });
 
-  // 9. Human review
+  // 10. Human review
   const human = opts.humanApproved === true;
   const humanScore = human ? 100 : opts.humanApproved === false ? 0 : 40;
   gates.push({
@@ -212,20 +233,42 @@ export async function validateToken(
   );
 
   const criticalFail = gates
-    .filter((g) => g.gateId === 'integrity' || g.gateId === 'originality')
+    .filter(
+      (g) =>
+        g.gateId === 'integrity' ||
+        g.gateId === 'originality' ||
+        g.gateId === 'hashcod_certificate',
+    )
     .some((g) => !g.passed);
+
   const passCount = gates.filter((g) => g.passed).length;
   let decision: ValidationReport['decision'] = 'fail';
-  if (!criticalFail && composite >= 75 && human) decision = 'pass';
-  else if (!criticalFail && composite >= 55) decision = 'conditional';
-  else decision = 'fail';
+
+  // Pass SOLO con certificado HashCod + human + sin críticos fallidos
+  if (!criticalFail && certCheck.valid && composite >= 75 && human) {
+    decision = 'pass';
+  } else if (!criticalFail && composite >= 55) {
+    decision = 'conditional';
+  } else {
+    decision = 'fail';
+  }
+
+  // Si falta certificado, forzar fail aunque el resto esté bien
+  if (!certCheck.valid) {
+    decision = decision === 'pass' ? 'fail' : decision;
+    if (decision === 'conditional' && composite >= 75) {
+      // keep conditional but message will explain HashCod required for pass
+    }
+  }
 
   const summary =
     decision === 'pass'
-      ? `Validación superada (${passCount}/${gates.length} gates). Listo para sello PQC / pipeline IP.`
-      : decision === 'conditional'
-        ? `Validación condicional (${composite}/100). Completa revisión humana o corrige gates fallidos.`
-        : `Validación fallida (${composite}/100). Revisa integridad, originalidad o calidad.`;
+      ? `Conformidad FIST278 alcanzada (${passCount}/${gates.length} gates). Certificado HashCod ${token.hashcodCertificate?.certSerial ?? ''} verificado por ${HASHCOD.org}. Listo para sello PQC.`
+      : !certCheck.valid
+        ? `Validación incompleta (${composite}/100). REQUIERE Certificado HashCod válido (estándar internacional FIST278 por ${HASHCOD.org}). Emite el certificado antes de revalidar.`
+        : decision === 'conditional'
+          ? `Validación condicional (${composite}/100). Completa revisión humana o corrige gates fallidos. Estándar: ${FIST278_STANDARD.id}.`
+          : `Validación fallida (${composite}/100). Revisa integridad, originalidad, certificado HashCod o calidad.`;
 
   return {
     id: uid('val'),
@@ -233,7 +276,7 @@ export async function validateToken(
     ranAt: new Date().toISOString(),
     gates,
     compositeScore: composite,
-    decision,
+    decision: !certCheck.valid && decision === 'pass' ? 'fail' : decision,
     summary,
     validatorNotes: opts.humanNotes ?? '',
   };
@@ -259,5 +302,6 @@ export function applyValidationToToken(
     validationHistory: [...token.validationHistory, report].slice(-20),
     updatedAt: now,
     validatedAt: report.decision === 'pass' ? now : token.validatedAt,
+    standardId: 'FIST278',
   };
 }

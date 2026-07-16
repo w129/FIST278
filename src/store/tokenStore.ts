@@ -1,8 +1,9 @@
 import type { AssetToken, RegistryStats, TokenizeInput } from '../types/token';
 import { sealToken, tokenizeAsset } from '../core/tokenize';
 import { applyValidationToToken, validateToken, type ValidateOptions } from '../core/validate';
+import { issueHashCodCertificate } from '../core/hashcodCertificate';
 
-const STORAGE_KEY = 'FIST278.v1.tokens';
+const STORAGE_KEY = 'FIST278.v2.tokens';
 
 function uid(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
@@ -55,6 +56,34 @@ export async function runValidation(
   if (!token) throw new Error('Token no encontrado');
   const report = await validateToken(token, tokens, opts);
   const updated = applyValidationToToken(token, report);
+  return { tokens: upsertToken(tokens, updated), token: updated };
+}
+
+/**
+ * Emite Certificado HashCod (HVC) y lo adjunta al token.
+ * Requerido por FIST278 para que la validación pueda dar pass.
+ */
+export async function issueAndAttachHashCodCert(
+  tokens: AssetToken[],
+  tokenId: string,
+  opts?: { subject?: string; issuedBy?: string },
+): Promise<{ tokens: AssetToken[]; token: AssetToken }> {
+  const token = tokens.find((t) => t.id === tokenId);
+  if (!token) throw new Error('Token no encontrado');
+  const existing = tokens
+    .map((t) => t.hashcodCertificate)
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
+  const cert = await issueHashCodCertificate(token, {
+    existingCerts: existing,
+    subject: opts?.subject,
+    issuedBy: opts?.issuedBy,
+  });
+  const updated: AssetToken = {
+    ...token,
+    hashcodCertificate: cert,
+    standardId: 'FIST278',
+    updatedAt: new Date().toISOString(),
+  };
   return { tokens: upsertToken(tokens, updated), token: updated };
 }
 
@@ -162,18 +191,23 @@ export function assertHex(h: string): boolean {
     const { tokens: next } = await createTokenizedAsset(list, s);
     list = next;
   }
-  // auto-validate first with human approve
+  // Demo: emitir Certificado HashCod + validar + sellar
   if (list[0]) {
+    const withCert = await issueAndAttachHashCodCert(list, list[0].id, {
+      subject: 'Demo HashCod · FIST278',
+      issuedBy: 'HashCod International Standards Authority',
+    });
+    list = withCert.tokens;
     const r = await runValidation(list, list[0].id, {
       humanApproved: true,
-      humanNotes: 'Demo seed aprobado',
+      humanNotes: 'Demo seed: conformidad FIST278 con Certificado HashCod',
     });
     list = r.tokens;
     try {
       const sealed = await sealValidatedToken(list, list[0].id);
       list = sealed.tokens;
     } catch {
-      /* ignore */
+      /* ignore si aún no pass */
     }
   }
   return list;

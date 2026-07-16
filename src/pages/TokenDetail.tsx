@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  Award,
   CheckCircle2,
   Coins,
   Copy,
@@ -12,12 +13,17 @@ import {
 } from 'lucide-react';
 import { useTokens } from '../context/TokenContext';
 import { tokenExportEnvelope, verifyTokenIntegrity } from '../core/tokenize';
+import {
+  certificateExportJson,
+  verifyHashCodCertificate,
+} from '../core/hashcodCertificate';
 import { BarChart, Gauge } from '../components/MathCharts';
-import type { TokenStatus } from '../types/token';
+import type { AssetToken, TokenStatus } from '../types/token';
+import { FIST278_STANDARD, HASHCOD, STANDARD_MARK } from '../data/standard';
 
 export function TokenDetail() {
   const { id } = useParams();
-  const { getToken, validate, seal, remove } = useTokens();
+  const { getToken, validate, seal, remove, issueHashCodCert } = useTokens();
   const token = getToken(id ?? '');
 
   if (!token) {
@@ -32,7 +38,13 @@ export function TokenDetail() {
   }
 
   return (
-    <TokenDetailView token={token} validate={validate} seal={seal} remove={remove} />
+    <TokenDetailView
+      token={token}
+      validate={validate}
+      seal={seal}
+      remove={remove}
+      issueHashCodCert={issueHashCodCert}
+    />
   );
 }
 
@@ -41,35 +53,58 @@ function TokenDetailView({
   validate,
   seal,
   remove,
+  issueHashCodCert,
 }: {
-  token: import('../types/token').AssetToken;
-  validate: (id: string, opts?: { humanApproved?: boolean; humanNotes?: string }) => Promise<unknown>;
+  token: AssetToken;
+  validate: (
+    id: string,
+    opts?: { humanApproved?: boolean; humanNotes?: string },
+  ) => Promise<unknown>;
   seal: (id: string) => Promise<unknown>;
   remove: (id: string) => void;
+  issueHashCodCert: (
+    id: string,
+    opts?: { subject?: string; issuedBy?: string },
+  ) => Promise<unknown>;
 }) {
   const navigate = useNavigate();
   const [humanApproved, setHumanApproved] = useState(false);
   const [humanNotes, setHumanNotes] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
-  const [integrity, setIntegrity] = useState<string>('');
+  const [integrity, setIntegrity] = useState('');
+  const [certSubject, setCertSubject] = useState(
+    token.asset.steward || token.tokenSerial,
+  );
 
   const report = token.latestValidation;
+  const gateScores = useMemo(() => report?.gates.map((g) => g.score) ?? [], [report]);
+  const hasCert = Boolean(token.hashcodCertificate);
 
-  const gateScores = useMemo(
-    () => report?.gates.map((g) => g.score) ?? [],
-    [report],
-  );
+  async function onIssueCert() {
+    setBusy(true);
+    setMsg('');
+    try {
+      await issueHashCodCert(token.id, {
+        subject: certSubject,
+        issuedBy: HASHCOD.legalName,
+      });
+      setMsg(
+        'Certificado HashCod (HVC) emitido. Ahora puedes ejecutar la validación FIST278.',
+      );
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'No se pudo emitir el certificado');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function onValidate() {
     setBusy(true);
     setMsg('');
     try {
-      await validate(token.id, {
-        humanApproved,
-        humanNotes,
-      });
-      setMsg('Validación ejecutada.');
+      await validate(token.id, { humanApproved, humanNotes });
+      setMsg('Validación FIST278 ejecutada.');
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'Error de validación');
     } finally {
@@ -82,7 +117,7 @@ function TokenDetailView({
     setMsg('');
     try {
       await seal(token.id);
-      setMsg('Token sellado (PQC-ready).');
+      setMsg('Token sellado (PQC-ready) bajo FIST278.');
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'No se pudo sellar');
     } finally {
@@ -92,11 +127,15 @@ function TokenDetailView({
 
   async function onVerify() {
     const r = await verifyTokenIntegrity(token);
-    setIntegrity(
+    let line =
       r.contentOk && r.metadataOk && r.commitmentOk
         ? 'Integridad OK: content, metadata y commitment verificados.'
-        : `Integridad FALLÓ: content=${r.contentOk} meta=${r.metadataOk} commit=${r.commitmentOk}`,
-    );
+        : `Integridad FALLÓ: content=${r.contentOk} meta=${r.metadataOk} commit=${r.commitmentOk}`;
+    const cv = await verifyHashCodCertificate(token.hashcodCertificate, token);
+    line += cv.valid
+      ? ` · Certificado HashCod VÁLIDO (${token.hashcodCertificate?.certSerial}).`
+      : ` · Certificado HashCod NO válido: ${cv.reasons[0] ?? 'ausente'}`;
+    setIntegrity(line);
   }
 
   function copy(text: string) {
@@ -114,6 +153,19 @@ function TokenDetailView({
     URL.revokeObjectURL(url);
   }
 
+  function downloadCert() {
+    if (!token.hashcodCertificate) return;
+    const blob = new Blob([certificateExportJson(token.hashcodCertificate)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${token.hashcodCertificate.certSerial}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
       <div style={{ marginBottom: '1rem' }}>
@@ -125,29 +177,34 @@ function TokenDetailView({
       <div className="page-header">
         <div>
           <div className="codename">
-            {token.tokenSerial} · fp {token.fingerprint}
+            {token.tokenSerial} · fp {token.fingerprint} · {FIST278_STANDARD.id}
           </div>
           <h2 style={{ marginTop: 4 }}>{token.asset.title}</h2>
           <p className="subtitle">{token.asset.description || 'Sin descripción.'}</p>
           <div className="tag-list">
             <StatusBadge status={token.status} />
+            <span className="badge">{STANDARD_MARK}</span>
+            {hasCert ? (
+              <span className="badge success">HashCod HVC</span>
+            ) : (
+              <span className="badge danger">Sin certificado HashCod</span>
+            )}
             <span className="badge neutral">{token.asset.kind}</span>
             <span className="badge neutral mono">{token.asset.modelId}</span>
-            <span className="badge neutral">{token.asset.licenseIntent}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onVerify}>
-            Verificar hashes
+            Verificar hashes + HVC
           </button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={downloadExport}>
-            <Download size={14} /> Export JSON
+            <Download size={14} /> Export token
           </button>
         </div>
       </div>
 
       {(msg || integrity) && (
-        <div className="card" style={{ marginBottom: '1rem', borderColor: 'var(--border-strong)' }}>
+        <div className="card" style={{ marginBottom: '1rem' }}>
           {msg && <p style={{ margin: 0 }}>{msg}</p>}
           {integrity && (
             <p className="mono" style={{ margin: msg ? '0.5rem 0 0' : 0, fontSize: '0.85rem' }}>
@@ -156,6 +213,110 @@ function TokenDetailView({
           )}
         </div>
       )}
+
+      {/* Certificado HashCod — bloque prioritario */}
+      <div className="card" style={{ marginBottom: '1.25rem', borderWidth: 3 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <p className="kicker">Autoridad de certificación</p>
+            <h3 style={{ margin: 0 }}>
+              <Award size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+              Certificado HashCod (obligatorio FIST278)
+            </h3>
+            <p className="muted" style={{ margin: '0.5rem 0 0', maxWidth: '70ch' }}>
+              FIST278 es un <strong>estándar internacional</strong> publicado por{' '}
+              <strong>{HASHCOD.org}</strong>. La validación solo puede dar{' '}
+              <strong>pass</strong> si existe un Certificado HashCod (HVC) vigente que
+              valide este token.
+            </p>
+          </div>
+          <Link to="/standard" className="btn btn-ghost btn-sm">
+            Ver norma FIST278
+          </Link>
+        </div>
+
+        {!hasCert ? (
+          <div style={{ marginTop: '1rem' }}>
+            <div className="form-group">
+              <label>Sujeto del certificado</label>
+              <input
+                value={certSubject}
+                onChange={(e) => setCertSubject(e.target.value)}
+                placeholder="Organización o steward certificado"
+              />
+            </div>
+            <button type="button" className="btn btn-primary" disabled={busy} onClick={onIssueCert}>
+              <Award size={16} /> Emitir Certificado HashCod
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginTop: '1rem' }}>
+            <table className="table">
+              <tbody>
+                <tr>
+                  <td className="muted">Serial HVC</td>
+                  <td className="mono">{token.hashcodCertificate!.certSerial}</td>
+                </tr>
+                <tr>
+                  <td className="muted">Emisor</td>
+                  <td>
+                    {token.hashcodCertificate!.issuer} · {token.hashcodCertificate!.issuerId}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="muted">Estándar</td>
+                  <td>
+                    {token.hashcodCertificate!.standard} v
+                    {token.hashcodCertificate!.standardVersion}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="muted">Sujeto</td>
+                  <td>{token.hashcodCertificate!.subject}</td>
+                </tr>
+                <tr>
+                  <td className="muted">Vigencia</td>
+                  <td className="mono" style={{ fontSize: '0.8rem' }}>
+                    {token.hashcodCertificate!.issuedAt} → {token.hashcodCertificate!.expiresAt}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="muted">Firma HashCod</td>
+                  <td className="mono" style={{ fontSize: '0.72rem', wordBreak: 'break-all' }}>
+                    {token.hashcodCertificate!.signature}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="muted">Marca</td>
+                  <td>
+                    <strong>{token.hashcodCertificate!.mark}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+              <button type="button" className="btn btn-sm btn-ghost" onClick={downloadCert}>
+                <Download size={14} /> Export HVC JSON
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => copy(token.hashcodCertificate!.signature)}
+              >
+                <Copy size={12} /> Copiar firma
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                disabled={busy}
+                onClick={onIssueCert}
+              >
+                Reemitir certificado
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-4" style={{ marginBottom: '1.25rem' }}>
         <div className="card" style={{ textAlign: 'center' }}>
@@ -176,16 +337,26 @@ function TokenDetailView({
         </div>
         <div className="card">
           <div className="stat-label">Content SHA-256</div>
-          <p className="mono" style={{ fontSize: '0.72rem', wordBreak: 'break-all', margin: '0.4rem 0' }}>
+          <p
+            className="mono"
+            style={{ fontSize: '0.72rem', wordBreak: 'break-all', margin: '0.4rem 0' }}
+          >
             {token.contentHash}
           </p>
-          <button type="button" className="btn btn-sm btn-ghost" onClick={() => copy(token.contentHash)}>
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost"
+            onClick={() => copy(token.contentHash)}
+          >
             <Copy size={12} /> Copiar
           </button>
         </div>
         <div className="card">
           <div className="stat-label">Commitment</div>
-          <p className="mono" style={{ fontSize: '0.72rem', wordBreak: 'break-all', margin: '0.4rem 0' }}>
+          <p
+            className="mono"
+            style={{ fontSize: '0.72rem', wordBreak: 'break-all', margin: '0.4rem 0' }}
+          >
             {token.commitmentHash}
           </p>
           <button
@@ -204,9 +375,6 @@ function TokenDetailView({
             <br />
             unique {(token.features.uniqueWordRatio * 100).toFixed(0)}% · rep{' '}
             {token.features.repetitionScore.toFixed(2)}
-            <br />
-            AI-phrase {token.features.aiPhraseSignal.toFixed(2)} · struct{' '}
-            {token.features.structuralScore.toFixed(2)}
           </p>
         </div>
       </div>
@@ -215,12 +383,29 @@ function TokenDetailView({
         <div className="card">
           <h3>
             <ShieldCheck size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-            Pipeline de validación
+            Pipeline de validación FIST278
           </h3>
           <p className="muted" style={{ fontSize: '0.88rem' }}>
-            9 gates: integridad, estructura, divulgación IA, originalidad, calidad, política,
-            procedencia, sello PQC, revisión humana.
+            10 gates. <strong>Gate crítico:</strong> Certificado HashCod. Sin HVC válido no hay{' '}
+            <code>pass</code>.
           </p>
+
+          {!hasCert && (
+            <div
+              className="card"
+              style={{
+                marginBottom: 12,
+                background: '#fff',
+                borderStyle: 'dashed',
+              }}
+            >
+              <strong>Bloqueo normativo FIST278-4</strong>
+              <p className="muted" style={{ margin: '0.35rem 0 0' }}>
+                Emite primero el Certificado HashCod (arriba). Después marca la aprobación
+                humana y ejecuta la validación.
+              </p>
+            </div>
+          )}
 
           <label
             style={{
@@ -248,7 +433,7 @@ function TokenDetailView({
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button type="button" className="btn btn-primary" disabled={busy} onClick={onValidate}>
-              <Shield size={16} /> Ejecutar validación
+              <Shield size={16} /> Ejecutar validación FIST278
             </button>
             <button
               type="button"
@@ -265,22 +450,29 @@ function TokenDetailView({
               <p style={{ marginTop: '1rem' }}>{report.summary}</p>
               <BarChart
                 values={gateScores}
-                labels={report.gates.map((g) => g.gateId.slice(0, 4))}
+                labels={report.gates.map((g) =>
+                  g.gateId === 'hashcod_certificate' ? 'HVC' : g.gateId.slice(0, 4),
+                )}
                 height={110}
               />
               <ul className="checklist" style={{ marginTop: 12 }}>
                 {report.gates.map((g) => (
-                  <li key={g.gateId} className={g.passed ? 'done' : ''}>
+                  <li
+                    key={g.gateId}
+                    className={g.passed ? 'done' : ''}
+                    style={
+                      g.gateId === 'hashcod_certificate' && !g.passed
+                        ? { borderWidth: 2 }
+                        : undefined
+                    }
+                  >
                     <span className="check-box">
-                      {g.passed ? (
-                        <CheckCircle2 size={12} />
-                      ) : (
-                        <XCircle size={12} />
-                      )}
+                      {g.passed ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
                     </span>
                     <span className="check-label">
                       <strong>
                         {g.name} · {g.score}
+                        {g.gateId === 'hashcod_certificate' ? ' · CRÍTICO' : ''}
                       </strong>
                       <br />
                       <span className="muted" style={{ fontSize: '0.8rem' }}>
@@ -308,16 +500,8 @@ function TokenDetailView({
                   <td>{token.asset.steward}</td>
                 </tr>
                 <tr>
-                  <td className="muted">Prompt hash</td>
-                  <td className="mono" style={{ fontSize: '0.75rem' }}>
-                    {token.promptHash || '—'}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="muted">Metadata hash</td>
-                  <td className="mono" style={{ fontSize: '0.75rem' }}>
-                    {token.metadataHash.slice(0, 24)}…
-                  </td>
+                  <td className="muted">Estándar</td>
+                  <td>{token.standardId ?? 'FIST278'}</td>
                 </tr>
                 <tr>
                   <td className="muted">Tokenizado</td>
@@ -338,8 +522,6 @@ function TokenDetailView({
                 <span className="mono" style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}>
                   {token.pqcSeal.sealHash}
                 </span>
-                <br />
-                {token.pqcSeal.sealedAt}
               </p>
             </div>
           )}
@@ -350,28 +532,18 @@ function TokenDetailView({
               className="mono"
               style={{
                 margin: 0,
-                maxHeight: 280,
+                maxHeight: 220,
                 overflow: 'auto',
                 fontSize: '0.78rem',
                 whiteSpace: 'pre-wrap',
-                background: 'var(--bg)',
+                background: '#fff',
                 padding: '0.75rem',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
+                border: '2px solid #000',
               }}
             >
               {token.asset.content}
             </pre>
           </div>
-
-          {token.asset.prompt && (
-            <div className="card">
-              <h3>Prompt</h3>
-              <p className="muted" style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '0.88rem' }}>
-                {token.asset.prompt}
-              </p>
-            </div>
-          )}
 
           <div className="card">
             <h3>Zona peligrosa</h3>

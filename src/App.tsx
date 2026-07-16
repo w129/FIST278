@@ -13,6 +13,7 @@ import { PostQuantumLab } from './pages/PostQuantumLab';
 import { Methodology } from './pages/Methodology';
 import { Knowledge } from './pages/Knowledge';
 import { MathLab } from './pages/MathLab';
+import { Standard } from './pages/Standard';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
               <Route path="tokenize" element={<Tokenize />} />
               <Route path="registry" element={<TokenRegistry />} />
               <Route path="tokens/:id" element={<TokenDetail />} />
+              <Route path="standard" element={<Standard />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
               <Route path="new" element={<NewProject />} />

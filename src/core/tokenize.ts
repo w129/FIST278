@@ -86,6 +86,7 @@ export async function tokenizeAsset(
     features,
     validationHistory: [],
     linkedProjectId: input.linkedProjectId,
+    standardId: 'FIST278',
     createdAt: now,
     updatedAt: now,
     tokenizedAt: now,

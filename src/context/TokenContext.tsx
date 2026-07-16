@@ -12,6 +12,7 @@ import {
   createTokenizedAsset,
   deleteToken,
   ensureDemoTokens,
+  issueAndAttachHashCodCert,
   loadTokens,
   registryStats,
   runValidation,
@@ -29,6 +30,10 @@ type TokenContextValue = {
   tokenize: (input: TokenizeInput) => Promise<AssetToken>;
   validate: (id: string, opts?: ValidateOptions) => Promise<AssetToken>;
   seal: (id: string) => Promise<AssetToken>;
+  issueHashCodCert: (
+    id: string,
+    opts?: { subject?: string; issuedBy?: string },
+  ) => Promise<AssetToken>;
   remove: (id: string) => void;
   save: (token: AssetToken) => void;
   refresh: () => void;
@@ -78,6 +83,15 @@ export function TokenProvider({ children }: { children: ReactNode }) {
     return token;
   }, []);
 
+  const issueHashCodCert = useCallback(
+    async (id: string, opts?: { subject?: string; issuedBy?: string }) => {
+      const { tokens: next, token } = await issueAndAttachHashCodCert(loadTokens(), id, opts);
+      setTokens(next);
+      return token;
+    },
+    [],
+  );
+
   const remove = useCallback((id: string) => {
     setTokens((prev) => deleteToken(prev, id));
   }, []);
@@ -102,11 +116,24 @@ export function TokenProvider({ children }: { children: ReactNode }) {
       tokenize,
       validate,
       seal,
+      issueHashCodCert,
       remove,
       save,
       refresh,
     }),
-    [tokens, stats, loading, getToken, tokenize, validate, seal, remove, save, refresh],
+    [
+      tokens,
+      stats,
+      loading,
+      getToken,
+      tokenize,
+      validate,
+      seal,
+      issueHashCodCert,
+      remove,
+      save,
+      refresh,
+    ],
   );
 
   return <TokenContext.Provider value={value}>{children}</TokenContext.Provider>;

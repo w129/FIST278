@@ -9,6 +9,7 @@ import {
   Calculator,
   Coins,
   Library,
+  Award,
 } from 'lucide-react';
 import { VectorBackground } from './VectorBackground';
 
@@ -16,6 +17,7 @@ const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/tokenize', label: 'Tokenizar IA', icon: Coins },
   { to: '/registry', label: 'Registro tokens', icon: Library },
+  { to: '/standard', label: 'Estándar FIST278', icon: Award },
   { to: '/projects', label: 'Pipeline IP', icon: GitBranch },
   { to: '/new', label: 'Nueva IP', icon: PlusCircle },
   { to: '/mathlab', label: 'Math Lab', icon: Calculator },
@@ -36,7 +38,7 @@ export function Layout() {
             </div>
             <div>
               <h1>FIST278</h1>
-              <p>Tokenizar · Validar IA</p>
+              <p>HashCod International Standard</p>
             </div>
           </div>
 
@@ -55,11 +57,11 @@ export function Layout() {
           </nav>
 
           <div className="sidebar-footer">
-            <strong>Función base</strong>
+            <strong>Certified by HashCod</strong>
             <div style={{ marginTop: 6 }}>
-              Activos IA → Token SHA-256
+              Estándar internacional FIST278
               <br />
-              Validación 9 gates → Sello
+              Validación solo con certificado HVC
             </div>
           </div>
         </aside>

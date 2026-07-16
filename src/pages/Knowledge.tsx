@@ -1,7 +1,15 @@
 const SECTIONS = [
   {
+    title: 'FIST278 — Estándar internacional HashCod',
+    body: `FIST278 es el Framework for International Standardization of Tokenized AI Assets, publicado por HashCod (HashCod International Standards Authority). Es la norma de referencia para tokenizar y validar activos generados por IA. La marca de conformidad es «FIST278 · Certified by HashCod».`,
+  },
+  {
+    title: 'Certificado HashCod obligatorio',
+    body: `Según FIST278-4, la validación SOLO puede dar pass si existe un Certificado HashCod de Validación (HVC) vigente. El HVC vincula tokenSerial, contentHash y commitmentHash, y porta firma de autoridad HashCod. Sin HVC: fail/conditional — nunca pass. Emisión: detalle del token → Emitir Certificado HashCod.`,
+  },
+  {
     title: 'Función base: tokenizar y validar activos IA',
-    body: `FIST278 parte de outputs generados por IA. 1) Ingiere contenido + modelo + prompt + steward. 2) Tokeniza: canonicaliza, SHA-256(content), SHA-256(metadata), commitment C=SHA256(contentHash‖metadataHash‖serial‖domain), serial FST-YEAR-####, features (entropía, repetición, señales de plantilla). 3) Valida en 9 gates: integridad, estructura, divulgación IA, originalidad (Jaccard trigramas vs registro), calidad, política, procedencia, PQC, revisión humana. 4) Si pass → sello PQC-ready. El pipeline IP y Math Lab son capas posteriores.`,
+    body: `1) Ingiere contenido + modelo + prompt + steward. 2) Tokeniza (SHA-256 + commitment FIST278-v1). 3) Emite Certificado HashCod (HVC). 4) Valida 10 gates (gate crítico HVC). 5) Si pass → sello PQC-ready. Pipeline IP y Math Lab son capas posteriores.`,
   },
   {
     title: 'Formalismo matemático del motor',

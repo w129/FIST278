@@ -31,12 +31,12 @@ export function Dashboard() {
     <div>
       <div className="page-header">
         <div>
-          <p className="kicker">Núcleo operativo</p>
+          <p className="kicker">FIST278 · HashCod International Standard</p>
           <h2>Tokenizar y validar activos generados por IA</h2>
           <p className="subtitle">
-            Función base de FIST278: convierte outputs de IA en tokens verificables (SHA-256 +
-            commitment) y ejecuta un pipeline de validación multi-gate antes del sello PQC o del
-            pipeline de IP.
+            Estándar internacional publicado por <strong>HashCod</strong>. Tokeniza outputs de IA
+            (SHA-256 + commitment) y valídalos con pipeline multi-gate. La aprobación (
+            <strong>pass</strong>) exige un <strong>Certificado HashCod (HVC)</strong> vigente.
           </p>
         </div>
         <Link to="/tokenize" className="btn btn-primary">
@@ -80,7 +80,7 @@ export function Dashboard() {
               Ir a tokenizar <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-3" style={{ marginBottom: '1rem' }}>
+          <div className="grid grid-4" style={{ marginBottom: '1rem' }}>
             <div className="card">
               <div className="badge">01</div>
               <h3>Ingestar activo IA</h3>
@@ -92,14 +92,21 @@ export function Dashboard() {
               <div className="badge">02</div>
               <h3>Tokenizar</h3>
               <p className="muted" style={{ margin: 0 }}>
-                contentHash · metadataHash · commitment · serial AFT
+                contentHash · commitment · serial FST
               </p>
             </div>
             <div className="card">
-              <div className="badge success">03</div>
+              <div className="badge">03</div>
+              <h3>Certificado HashCod</h3>
+              <p className="muted" style={{ margin: 0 }}>
+                HVC obligatorio · FIST278-4
+              </p>
+            </div>
+            <div className="card">
+              <div className="badge success">04</div>
               <h3>Validar → Sellar</h3>
               <p className="muted" style={{ margin: 0 }}>
-                9 gates · originalidad Jaccard · human review · PQC seal
+                10 gates · human · PQC
               </p>
             </div>
           </div>
@@ -157,6 +164,9 @@ export function Dashboard() {
               Tras validar un token puedes profundizar en IP estructurada, Math Lab y PQC.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <Link to="/standard" className="btn btn-ghost">
+                Estándar FIST278 · HashCod
+              </Link>
               <Link to="/registry" className="btn btn-ghost">
                 <Coins size={16} /> Registro de tokens
               </Link>
@@ -171,11 +181,10 @@ export function Dashboard() {
           <div className="card">
             <h3>Modelo de commitment</h3>
             <div className="formula mono">
-              C = SHA256(contentHash ‖ metadataHash ‖ serial ‖ &quot;FIST278-v1&quot;)
+              Pass ⇔ HVC_HashCod válido ∧ integridad ∧ human ∧ score≥75
             </div>
             <p className="muted" style={{ marginBottom: 0, fontSize: '0.85rem' }}>
-              Originalidad: 1 − Jaccard(trigramas) vs registro. Calidad: entropía, repetición,
-              señales de plantilla IA.
+              Sin Certificado HashCod no hay conformidad FIST278. Ver norma en Estándar FIST278.
             </p>
           </div>
         </section>

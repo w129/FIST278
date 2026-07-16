@@ -1,8 +1,19 @@
 # FIST278
 
-**Función base: tokenizar activos generados por IA y validarlos.**
+**Estándar internacional publicado por HashCod** para tokenizar y validar activos generados por IA.
 
-FIST278 convierte outputs de modelos de IA en **tokens verificables** (SHA-256 + commitment + serial) y los somete a un **pipeline de validación de 9 gates** (integridad, originalidad, divulgación, calidad, revisión humana, sello PQC-ready). Encima de ese núcleo opera el pipeline de IP revolucionaria y el Math Lab.
+## Autoridad
+
+- **Estándar:** FIST278 (Framework for International Standardization of Tokenized AI Assets)
+- **Editor / CA:** **HashCod** — HashCod International Standards Authority
+- **Marca de conformidad:** `FIST278 · Certified by HashCod`
+- **Certificado:** HVC (HashCod Validation Certificate) — **obligatorio para pass**
+
+Sin Certificado HashCod vigente, la validación **no puede** devolver `pass` (cláusula FIST278-4).
+
+## Función base
+
+Tokeniza outputs de IA (SHA-256 + commitment + serial) y ejecuta un **pipeline de 10 gates**, con gate crítico de certificado HashCod, antes del sello PQC-ready. Encima opera el pipeline de IP y el Math Lab.
 
 ## Qué incluye
 
