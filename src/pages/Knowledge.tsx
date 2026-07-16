@@ -4,8 +4,8 @@ const SECTIONS = [
     body: `FIST278 es el Framework for International Standardization of Tokenized AI Assets, publicado por HashCod (HashCod International Standards Authority). Es la norma de referencia para tokenizar y validar activos generados por IA. La marca de conformidad es «FIST278 · Certified by HashCod».`,
   },
   {
-    title: 'Certificado HashCod obligatorio',
-    body: `Según FIST278-4, la validación SOLO puede dar pass si existe un Certificado HashCod de Validación (HVC) vigente. El HVC vincula tokenSerial, contentHash y commitmentHash, y porta firma de autoridad HashCod. Sin HVC: fail/conditional — nunca pass. Emisión: detalle del token → Emitir Certificado HashCod.`,
+    title: 'Certificado HashCod obligatorio + clave',
+    body: `Según FIST278-4, el certificado HashCod DEBE subirse y presentar una clave con formato: > |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <  (solo | y - entre > y <). Sin esa clave la plataforma no da pass. Flujo: Token → pegar/subir clave o archivo .json/.txt → Subir certificado → Validar con aprobación humana.`,
   },
   {
     title: 'Función base: tokenizar y validar activos IA',

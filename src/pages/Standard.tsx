@@ -94,23 +94,32 @@ export function Standard() {
       </div>
 
       <div className="card">
-        <h3>Certificado HashCod de Validación (HVC)</h3>
+        <h3>Certificado HashCod de Validación (HVC) + clave</h3>
         <p className="muted">
-          Para que un token alcance <strong>decision = pass</strong> bajo FIST278, debe poseer un
-          certificado emitido por <strong>HashCod</strong> que:
+          El certificado <strong>debe subirse</strong> a la plataforma y presentar una{' '}
+          <strong>clave HashCod</strong> con este formato exacto (solo <code>|</code> y{' '}
+          <code>-</code>):
+        </p>
+        <div className="formula mono" style={{ fontSize: '0.72rem', wordBreak: 'break-all' }}>
+          {`> |||||------|---|-|-|-|||----||||-------|-|-|-|-|-|-|-|-|-|--||-|-|-|-|-|------|||---||||---||||---| <`}
+        </div>
+        <p className="muted">
+          Para que un token alcance <strong>decision = pass</strong> bajo FIST278:
         </p>
         <ul className="muted" style={{ marginTop: 0 }}>
-          <li>Identifique emisor HashCod y estándar FIST278</li>
-          <li>Vincule tokenSerial + contentHash + commitmentHash</li>
-          <li>Porte firma verificable de la autoridad HashCod</li>
-          <li>Esté vigente (no expirado ni revocado)</li>
+          <li>Certificado subido con clave en formato &gt; |…|-…| &lt;</li>
+          <li>Emisor HashCod / estándar FIST278</li>
+          <li>Vínculo a token (serial / hashes) cuando se declare</li>
+          <li>Vigente (no expirado ni revocado)</li>
+          <li>Revisión humana marcada al validar</li>
         </ul>
         <div className="formula mono">
-          HVC = Sign_HashCod( payload(serial, commitment, content, subject, validity) )
+          Pass ⇔ clave_HashCod_formato_OK ∧ HVC ∧ integridad ∧ human
         </div>
         <p className="muted" style={{ marginBottom: 0, fontSize: '0.85rem' }}>
-          Emisión: en el detalle del token → «Emitir Certificado HashCod». Luego ejecuta la
-          validación con aprobación humana.
+          Flujo: detalle del token → pegar/subir clave o archivo → «Subir certificado HashCod» →
+          validar. (La lógica interna del sistema de claves se ampliará según especificación
+          HashCod.)
         </p>
       </div>
     </div>

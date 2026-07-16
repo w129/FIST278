@@ -15,6 +15,8 @@ import { useTokens } from '../context/TokenContext';
 import { tokenExportEnvelope, verifyTokenIntegrity } from '../core/tokenize';
 import {
   certificateExportJson,
+  HASHCOD_KEY_EXAMPLE,
+  parseHashCodKey,
   verifyHashCodCertificate,
 } from '../core/hashcodCertificate';
 import { BarChart, Gauge } from '../components/MathCharts';
@@ -23,7 +25,8 @@ import { FIST278_STANDARD, HASHCOD, STANDARD_MARK } from '../data/standard';
 
 export function TokenDetail() {
   const { id } = useParams();
-  const { getToken, validate, seal, remove, issueHashCodCert } = useTokens();
+  const { getToken, validate, seal, remove, issueHashCodCert, uploadHashCodCert } =
+    useTokens();
   const token = getToken(id ?? '');
 
   if (!token) {
@@ -44,6 +47,7 @@ export function TokenDetail() {
       seal={seal}
       remove={remove}
       issueHashCodCert={issueHashCodCert}
+      uploadHashCodCert={uploadHashCodCert}
     />
   );
 }
@@ -54,6 +58,7 @@ function TokenDetailView({
   seal,
   remove,
   issueHashCodCert,
+  uploadHashCodCert,
 }: {
   token: AssetToken;
   validate: (
@@ -64,7 +69,12 @@ function TokenDetailView({
   remove: (id: string) => void;
   issueHashCodCert: (
     id: string,
-    opts?: { subject?: string; issuedBy?: string },
+    opts?: { subject?: string; issuedBy?: string; hashcodKey?: string },
+  ) => Promise<unknown>;
+  uploadHashCodCert: (
+    id: string,
+    raw: string,
+    opts?: { subject?: string },
   ) => Promise<unknown>;
 }) {
   const navigate = useNavigate();
@@ -76,21 +86,50 @@ function TokenDetailView({
   const [certSubject, setCertSubject] = useState(
     token.asset.steward || token.tokenSerial,
   );
+  const [uploadText, setUploadText] = useState('');
+  const [pasteKey, setPasteKey] = useState(HASHCOD_KEY_EXAMPLE);
 
   const report = token.latestValidation;
   const gateScores = useMemo(() => report?.gates.map((g) => g.score) ?? [], [report]);
   const hasCert = Boolean(token.hashcodCertificate);
+  const keyPreview = token.hashcodCertificate?.hashcodKey;
+  const keyOk = parseHashCodKey(keyPreview).ok;
+
+  async function onUploadCert() {
+    setBusy(true);
+    setMsg('');
+    try {
+      const raw = uploadText.trim() || pasteKey.trim();
+      if (!raw) throw new Error('Pega la clave HashCod o el contenido del certificado.');
+      await uploadHashCodCert(token.id, raw, { subject: certSubject });
+      setMsg(
+        'Certificado HashCod subido. Clave en formato > |…|-…| < aceptada. Ejecuta la validación.',
+      );
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Error al subir certificado');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onFileChange(file: File | null) {
+    if (!file) return;
+    const text = await file.text();
+    setUploadText(text);
+  }
 
   async function onIssueCert() {
     setBusy(true);
     setMsg('');
     try {
+      const keyParse = parseHashCodKey(pasteKey);
       await issueHashCodCert(token.id, {
         subject: certSubject,
         issuedBy: HASHCOD.legalName,
+        hashcodKey: keyParse.ok ? keyParse.key : undefined,
       });
       setMsg(
-        'Certificado HashCod (HVC) emitido. Ahora puedes ejecutar la validación FIST278.',
+        'Certificado HashCod emitido con clave en formato de plataforma. Ejecuta la validación FIST278.',
       );
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'No se pudo emitir el certificado');
@@ -184,8 +223,10 @@ function TokenDetailView({
           <div className="tag-list">
             <StatusBadge status={token.status} />
             <span className="badge">{STANDARD_MARK}</span>
-            {hasCert ? (
-              <span className="badge success">HashCod HVC</span>
+            {hasCert && keyOk ? (
+              <span className="badge success">HashCod HVC · clave OK</span>
+            ) : hasCert ? (
+              <span className="badge danger">HVC sin clave válida</span>
             ) : (
               <span className="badge danger">Sin certificado HashCod</span>
             )}
@@ -214,43 +255,113 @@ function TokenDetailView({
         </div>
       )}
 
-      {/* Certificado HashCod — bloque prioritario */}
+      {/* Certificado HashCod — subida + clave obligatoria */}
       <div className="card" style={{ marginBottom: '1.25rem', borderWidth: 3 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div>
-            <p className="kicker">Autoridad de certificación</p>
+            <p className="kicker">Autoridad HashCod · clave obligatoria</p>
             <h3 style={{ margin: 0 }}>
               <Award size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-              Certificado HashCod (obligatorio FIST278)
+              Certificado HashCod (subir + clave)
             </h3>
-            <p className="muted" style={{ margin: '0.5rem 0 0', maxWidth: '70ch' }}>
-              FIST278 es un <strong>estándar internacional</strong> publicado por{' '}
-              <strong>{HASHCOD.org}</strong>. La validación solo puede dar{' '}
-              <strong>pass</strong> si existe un Certificado HashCod (HVC) vigente que
-              valide este token.
+            <p className="muted" style={{ margin: '0.5rem 0 0', maxWidth: '72ch' }}>
+              Para validar en la plataforma el certificado <strong>debe subirse</strong> y
+              presentar una clave con este formato (solo <code>|</code> y <code>-</code> entre{' '}
+              <code>&gt;</code> y <code>&lt;</code>):
             </p>
+            <div
+              className="formula mono"
+              style={{ fontSize: '0.72rem', wordBreak: 'break-all', marginTop: 8 }}
+            >
+              {HASHCOD_KEY_EXAMPLE}
+            </div>
           </div>
           <Link to="/standard" className="btn btn-ghost btn-sm">
             Ver norma FIST278
           </Link>
         </div>
 
-        {!hasCert ? (
-          <div style={{ marginTop: '1rem' }}>
-            <div className="form-group">
-              <label>Sujeto del certificado</label>
-              <input
-                value={certSubject}
-                onChange={(e) => setCertSubject(e.target.value)}
-                placeholder="Organización o steward certificado"
-              />
-            </div>
-            <button type="button" className="btn btn-primary" disabled={busy} onClick={onIssueCert}>
-              <Award size={16} /> Emitir Certificado HashCod
+        <div style={{ marginTop: '1rem' }}>
+          <div className="form-group">
+            <label>Sujeto del certificado</label>
+            <input
+              value={certSubject}
+              onChange={(e) => setCertSubject(e.target.value)}
+              placeholder="Organización o steward certificado"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              Clave HashCod (obligatoria) — debe decir el valor en forma &gt; |||||------|…| &lt;
+            </label>
+            <textarea
+              className="mono"
+              value={pasteKey}
+              onChange={(e) => setPasteKey(e.target.value)}
+              placeholder={HASHCOD_KEY_EXAMPLE}
+              style={{ minHeight: 72, fontSize: '0.78rem' }}
+            />
+            <span className="muted" style={{ fontSize: '0.78rem' }}>
+              {parseHashCodKey(pasteKey).ok
+                ? '✓ Formato de clave válido para la plataforma'
+                : parseHashCodKey(pasteKey).error}
+            </span>
+          </div>
+
+          <div className="form-group">
+            <label>Subir archivo de certificado (.json / .txt / .hvc)</label>
+            <input
+              type="file"
+              accept=".json,.txt,.hvc,.cert,text/plain,application/json"
+              onChange={(e) => void onFileChange(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>O pega el contenido del certificado (JSON o texto con la clave)</label>
+            <textarea
+              className="mono"
+              value={uploadText}
+              onChange={(e) => setUploadText(e.target.value)}
+              placeholder={`{\n  "issuer": "HashCod",\n  "hashcodKey": "${HASHCOD_KEY_EXAMPLE}",\n  "standard": "FIST278"\n}`}
+              style={{ minHeight: 100, fontSize: '0.78rem' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={busy}
+              onClick={onUploadCert}
+            >
+              <Award size={16} /> Subir certificado HashCod
+            </button>
+            <button type="button" className="btn btn-ghost" disabled={busy} onClick={onIssueCert}>
+              Emitir con esta clave (local)
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => setPasteKey(HASHCOD_KEY_EXAMPLE)}
+            >
+              Usar clave de ejemplo
             </button>
           </div>
-        ) : (
-          <div style={{ marginTop: '1rem' }}>
+        </div>
+
+        {hasCert && (
+          <div style={{ marginTop: '1.25rem', borderTop: '2px solid #000', paddingTop: '1rem' }}>
+            <h3 style={{ marginTop: 0 }}>
+              Certificado adjunto {keyOk ? '· clave OK' : '· clave inválida'}
+            </h3>
+            <div
+              className="formula mono"
+              style={{ fontSize: '0.72rem', wordBreak: 'break-all' }}
+            >
+              {keyPreview}
+            </div>
             <table className="table">
               <tbody>
                 <tr>
@@ -258,17 +369,12 @@ function TokenDetailView({
                   <td className="mono">{token.hashcodCertificate!.certSerial}</td>
                 </tr>
                 <tr>
-                  <td className="muted">Emisor</td>
-                  <td>
-                    {token.hashcodCertificate!.issuer} · {token.hashcodCertificate!.issuerId}
-                  </td>
+                  <td className="muted">Origen</td>
+                  <td>{token.hashcodCertificate!.source}</td>
                 </tr>
                 <tr>
-                  <td className="muted">Estándar</td>
-                  <td>
-                    {token.hashcodCertificate!.standard} v
-                    {token.hashcodCertificate!.standardVersion}
-                  </td>
+                  <td className="muted">Emisor</td>
+                  <td>{token.hashcodCertificate!.issuer}</td>
                 </tr>
                 <tr>
                   <td className="muted">Sujeto</td>
@@ -280,18 +386,6 @@ function TokenDetailView({
                     {token.hashcodCertificate!.issuedAt} → {token.hashcodCertificate!.expiresAt}
                   </td>
                 </tr>
-                <tr>
-                  <td className="muted">Firma HashCod</td>
-                  <td className="mono" style={{ fontSize: '0.72rem', wordBreak: 'break-all' }}>
-                    {token.hashcodCertificate!.signature}
-                  </td>
-                </tr>
-                <tr>
-                  <td className="muted">Marca</td>
-                  <td>
-                    <strong>{token.hashcodCertificate!.mark}</strong>
-                  </td>
-                </tr>
               </tbody>
             </table>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
@@ -301,17 +395,9 @@ function TokenDetailView({
               <button
                 type="button"
                 className="btn btn-sm btn-ghost"
-                onClick={() => copy(token.hashcodCertificate!.signature)}
+                onClick={() => copy(token.hashcodCertificate!.hashcodKey)}
               >
-                <Copy size={12} /> Copiar firma
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-ghost"
-                disabled={busy}
-                onClick={onIssueCert}
-              >
-                Reemitir certificado
+                <Copy size={12} /> Copiar clave
               </button>
             </div>
           </div>
@@ -390,7 +476,7 @@ function TokenDetailView({
             <code>pass</code>.
           </p>
 
-          {!hasCert && (
+          {(!hasCert || !keyOk) && (
             <div
               className="card"
               style={{
@@ -401,8 +487,9 @@ function TokenDetailView({
             >
               <strong>Bloqueo normativo FIST278-4</strong>
               <p className="muted" style={{ margin: '0.35rem 0 0' }}>
-                Emite primero el Certificado HashCod (arriba). Después marca la aprobación
-                humana y ejecuta la validación.
+                Sube un certificado HashCod cuya clave sea del tipo{' '}
+                <code>&gt; |||||------|---|-|-|-|||…| &lt;</code>. Sin esa clave la plataforma no
+                puede dar pass.
               </p>
             </div>
           )}

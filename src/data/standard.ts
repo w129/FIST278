@@ -36,8 +36,9 @@ export const FIST278_STANDARD = {
   normativeRequirements: [
     'Todo activo IA sujeto a FIST278 DEBE tokenizarse con contentHash, metadataHash y commitmentHash.',
     'La validación conforme a FIST278 REQUIERE un Certificado HashCod vigente y verificable.',
-    'Sin Certificado HashCod válido, el resultado de validación NO PUEDE ser pass (aprobado).',
-    'El certificado DEBE vincular serial del token y commitmentHash del activo.',
+    'El certificado HashCod DEBE subirse a la plataforma y PRESENTAR una clave en formato: > |||||------|---|-|-|-|||----||||…| < (solo | y - entre delimitadores).',
+    'Sin clave HashCod en ese formato, el resultado de validación NO PUEDE ser pass (aprobado).',
+    'El certificado DEBE vincular serial del token y commitmentHash del activo cuando se declare.',
     'El sello PQC-ready es RECOMENDADO tras pass certificado.',
     'La divulgación de modelo generador y steward humano es OBLIGATORIA.',
   ],

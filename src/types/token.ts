@@ -55,6 +55,16 @@ export type HashCodCertificate = {
   status: 'valid' | 'expired' | 'revoked';
   issuedBy: string;
   mark: string;
+  /**
+   * Clave HashCod obligatoria para validar en la plataforma.
+   * Formato exacto: > |||||------|---|-|-|-|||----||||…| <
+   * Solo caracteres | y - entre los delimitadores > y <.
+   */
+  hashcodKey: string;
+  /** Origen: subido por el usuario o emitido en plataforma */
+  source: 'uploaded' | 'issued';
+  /** Contenido crudo del archivo subido (opcional, recortado) */
+  rawUpload?: string;
 };
 
 export type GateResult = {

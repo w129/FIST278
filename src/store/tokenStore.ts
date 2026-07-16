@@ -1,9 +1,12 @@
 import type { AssetToken, RegistryStats, TokenizeInput } from '../types/token';
 import { sealToken, tokenizeAsset } from '../core/tokenize';
 import { applyValidationToToken, validateToken, type ValidateOptions } from '../core/validate';
-import { issueHashCodCertificate } from '../core/hashcodCertificate';
+import {
+  certificateFromUpload,
+  issueHashCodCertificate,
+} from '../core/hashcodCertificate';
 
-const STORAGE_KEY = 'FIST278.v2.tokens';
+const STORAGE_KEY = 'FIST278.v3.tokens';
 
 function uid(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
@@ -66,7 +69,7 @@ export async function runValidation(
 export async function issueAndAttachHashCodCert(
   tokens: AssetToken[],
   tokenId: string,
-  opts?: { subject?: string; issuedBy?: string },
+  opts?: { subject?: string; issuedBy?: string; hashcodKey?: string },
 ): Promise<{ tokens: AssetToken[]; token: AssetToken }> {
   const token = tokens.find((t) => t.id === tokenId);
   if (!token) throw new Error('Token no encontrado');
@@ -77,11 +80,43 @@ export async function issueAndAttachHashCodCert(
     existingCerts: existing,
     subject: opts?.subject,
     issuedBy: opts?.issuedBy,
+    hashcodKey: opts?.hashcodKey,
   });
   const updated: AssetToken = {
     ...token,
     hashcodCertificate: cert,
     standardId: 'FIST278',
+    updatedAt: new Date().toISOString(),
+  };
+  return { tokens: upsertToken(tokens, updated), token: updated };
+}
+
+/**
+ * Sube certificado HashCod: el archivo/texto DEBE presentar clave
+ * > |||||------|---|-|-|-|||…| <
+ */
+export async function uploadAndAttachHashCodCert(
+  tokens: AssetToken[],
+  tokenId: string,
+  rawUpload: string,
+  opts?: { subject?: string },
+): Promise<{ tokens: AssetToken[]; token: AssetToken }> {
+  const token = tokens.find((t) => t.id === tokenId);
+  if (!token) throw new Error('Token no encontrado');
+  const existing = tokens
+    .map((t) => t.hashcodCertificate)
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
+  const cert = await certificateFromUpload(token, rawUpload, {
+    existingCerts: existing,
+    subject: opts?.subject,
+  });
+  const updated: AssetToken = {
+    ...token,
+    hashcodCertificate: cert,
+    standardId: 'FIST278',
+    // Si había pass previo sin esta clave, forzar revalidación
+    status: token.status === 'validated' || token.status === 'sealed' ? 'tokenized' : token.status,
+    latestValidation: undefined,
     updatedAt: new Date().toISOString(),
   };
   return { tokens: upsertToken(tokens, updated), token: updated };

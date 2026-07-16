@@ -17,6 +17,7 @@ import {
   registryStats,
   runValidation,
   sealValidatedToken,
+  uploadAndAttachHashCodCert,
   upsertToken,
 } from '../store/tokenStore';
 import type { ValidateOptions } from '../core/validate';
@@ -32,7 +33,12 @@ type TokenContextValue = {
   seal: (id: string) => Promise<AssetToken>;
   issueHashCodCert: (
     id: string,
-    opts?: { subject?: string; issuedBy?: string },
+    opts?: { subject?: string; issuedBy?: string; hashcodKey?: string },
+  ) => Promise<AssetToken>;
+  uploadHashCodCert: (
+    id: string,
+    raw: string,
+    opts?: { subject?: string },
   ) => Promise<AssetToken>;
   remove: (id: string) => void;
   save: (token: AssetToken) => void;
@@ -84,8 +90,25 @@ export function TokenProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const issueHashCodCert = useCallback(
-    async (id: string, opts?: { subject?: string; issuedBy?: string }) => {
+    async (
+      id: string,
+      opts?: { subject?: string; issuedBy?: string; hashcodKey?: string },
+    ) => {
       const { tokens: next, token } = await issueAndAttachHashCodCert(loadTokens(), id, opts);
+      setTokens(next);
+      return token;
+    },
+    [],
+  );
+
+  const uploadHashCodCert = useCallback(
+    async (id: string, raw: string, opts?: { subject?: string }) => {
+      const { tokens: next, token } = await uploadAndAttachHashCodCert(
+        loadTokens(),
+        id,
+        raw,
+        opts,
+      );
       setTokens(next);
       return token;
     },
@@ -117,6 +140,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
       validate,
       seal,
       issueHashCodCert,
+      uploadHashCodCert,
       remove,
       save,
       refresh,
@@ -130,6 +154,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
       validate,
       seal,
       issueHashCodCert,
+      uploadHashCodCert,
       remove,
       save,
       refresh,
