@@ -2,6 +2,16 @@
 
 **Estándar internacional publicado por hashcod** para tokenizar y validar activos generados por IA.
 
+## Manual de operador (obligatorio)
+
+La UI es deliberadamente densa (clearance, modos Ω, glifos, predicados).  
+**Lea el manual PDF antes de operar:**
+
+- En la app: [`/docs/FIST278-OPERATOR-MANUAL.pdf`](./public/docs/FIST278-OPERATOR-MANUAL.pdf)
+- Regenerar: `npm run docs:manual`
+
+Incluye frases de elevación de clearance (C1–C6), pipeline α→θ y remediación de errores F278-E**.
+
 ## Autoridad
 
 - **Estándar:** FIST278 (Framework for International Standardization of Tokenized AI Assets)

@@ -11,22 +11,24 @@ import {
   Library,
   Award,
   ClipboardList,
+  Terminal,
 } from 'lucide-react';
 import { VectorBackground } from './VectorBackground';
 import { HashcodIcon } from './HashcodIcon';
 
 const links = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/registration', label: '100 Formularios', icon: ClipboardList },
-  { to: '/tokenize', label: 'Tokenizar IA', icon: Coins },
-  { to: '/registry', label: 'Registro tokens', icon: Library },
-  { to: '/standard', label: 'Estándar FIST278', icon: Award },
-  { to: '/projects', label: 'Pipeline IP', icon: GitBranch },
-  { to: '/new', label: 'Nueva IP', icon: PlusCircle },
-  { to: '/mathlab', label: 'Math Lab', icon: Calculator },
-  { to: '/postquantum', label: 'Lab Post-Cuántico', icon: Shield },
-  { to: '/methodology', label: 'Metodología', icon: FlaskConical },
-  { to: '/knowledge', label: 'Base de conocimiento', icon: BookOpen },
+  { to: '/', label: 'Σ-DASH', icon: LayoutDashboard, end: true },
+  { to: '/ops', label: 'Ω-CONSOLE', icon: Terminal },
+  { to: '/registration', label: 'Δ-100F DOSSIER', icon: ClipboardList },
+  { to: '/tokenize', label: 'Φ-TOKEN FORGE', icon: Coins },
+  { to: '/registry', label: 'Λ-REGISTRY', icon: Library },
+  { to: '/standard', label: 'Ψ-NORM FIST278', icon: Award },
+  { to: '/projects', label: 'Γ-IP PIPELINE', icon: GitBranch },
+  { to: '/new', label: 'Γ-NEW IP', icon: PlusCircle },
+  { to: '/mathlab', label: 'μ-MATH LATTICE', icon: Calculator },
+  { to: '/postquantum', label: 'ρ-PQC LAB', icon: Shield },
+  { to: '/methodology', label: 'ξ-METHODOLOGY', icon: FlaskConical },
+  { to: '/knowledge', label: 'κ-KB', icon: BookOpen },
 ];
 
 export function Layout() {
@@ -41,7 +43,7 @@ export function Layout() {
             </div>
             <div>
               <h1>FIST278</h1>
-              <p>hashcod International Standard</p>
+              <p>hashcod · HVC-LATTICE/Ω-4.2</p>
             </div>
           </div>
 
@@ -60,11 +62,11 @@ export function Layout() {
           </nav>
 
           <div className="sidebar-footer">
-            <strong>Certified by hashcod</strong>
+            <strong>Π_pass ⇔ K_hvc ∧ gates*</strong>
             <div style={{ marginTop: 6 }}>
-              Estándar internacional FIST278
+              Manual PDF requerido
               <br />
-              Validación solo con certificado HVC
+              /docs/FIST278-OPERATOR-MANUAL.pdf
             </div>
           </div>
         </aside>

@@ -30,28 +30,40 @@ export function Dashboard() {
 
   return (
     <div>
+      <div className="classif-banner">
+        FIST278 // hashcod // SURFACE-DENSE // OPERATOR-MANUAL-REQUIRED
+      </div>
       <div className="page-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <HashcodIcon size={36} variant="black" />
             <p className="kicker" style={{ margin: 0 }}>
-              FIST278 · hashcod International Standard
+              Σ-DASH · FIST278 / hashcod / Ω-4.2
             </p>
           </div>
-          <h2>Tokenizar y validar activos generados por IA</h2>
+          <h2>Plano de control de tokenización (superficie no trivial)</h2>
           <p className="subtitle">
-            Estándar internacional publicado por <strong>hashcod</strong>. Tokeniza outputs de IA
-            (SHA-256 + commitment) y valídalos con pipeline multi-gate. La aprobación (
-            <strong>pass</strong>) exige un <strong>Certificado hashcod (HVC)</strong> vigente.
+            Predicado de conformidad:{' '}
+            <span className="mono" style={{ fontSize: '0.85rem' }}>
+              Π_pass ⇔ K_hashcod✓ ∧ HVC✓ ∧ H_int✓ ∧ Orig✓ ∧ Human✓ ∧ score≥75
+            </span>
+            . Completar Δ-100F, forjar Φ-token, inyectar clave PIPE_DASH, validar retícula Λ y
+            sellar Σ-PQC. Sin manual de operador la retícula es deliberadamente opaca.
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Link to="/registration" className="btn btn-primary">
-            100 Formularios de registro
+          <Link to="/ops" className="btn btn-primary">
+            Ω-CONSOLE
+          </Link>
+          <Link to="/registration" className="btn btn-ghost">
+            Δ-100F DOSSIER
           </Link>
           <Link to="/tokenize" className="btn btn-ghost">
-            <Coins size={18} /> Tokenizar activo
+            <Coins size={18} /> Φ-TOKEN FORGE
           </Link>
+          <a className="btn btn-ghost btn-sm" href="/docs/FIST278-OPERATOR-MANUAL.pdf" target="_blank" rel="noreferrer">
+            MANUAL PDF
+          </a>
         </div>
       </div>
 
