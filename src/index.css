@@ -165,8 +165,8 @@ textarea {
 }
 
 .brand-mark {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 0;
   background: #000000;
   color: #ffffff;
@@ -176,11 +176,17 @@ textarea {
   font-weight: 700;
   font-size: 0.95rem;
   border: 2px solid #000000;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.brand-mark-icon {
+  padding: 6px;
 }
 
 .brand-mark svg {
   color: #ffffff;
-  stroke: #ffffff;
+  stroke: none;
 }
 
 .brand h1 {

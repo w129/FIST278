@@ -12,6 +12,7 @@ import {
 import { useTokens } from '../context/TokenContext';
 import { useProjects } from '../context/ProjectContext';
 import { BarChart } from '../components/MathCharts';
+import { HashcodIcon } from '../components/HashcodIcon';
 
 export function Dashboard() {
   const { tokens, stats, loading } = useTokens();
@@ -31,7 +32,12 @@ export function Dashboard() {
     <div>
       <div className="page-header">
         <div>
-          <p className="kicker">FIST278 · hashcod International Standard</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <HashcodIcon size={36} variant="black" />
+            <p className="kicker" style={{ margin: 0 }}>
+              FIST278 · hashcod International Standard
+            </p>
+          </div>
           <h2>Tokenizar y validar activos generados por IA</h2>
           <p className="subtitle">
             Estándar internacional publicado por <strong>hashcod</strong>. Tokeniza outputs de IA

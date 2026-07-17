@@ -1,12 +1,18 @@
 import { Award, BadgeCheck, BookMarked, Globe2 } from 'lucide-react';
 import { FIST278_STANDARD, HASHCOD, STANDARD_MARK } from '../data/standard';
+import { HashcodIcon } from '../components/HashcodIcon';
 
 export function Standard() {
   return (
     <div>
       <div className="page-header">
         <div>
-          <p className="kicker">Estándar internacional</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <HashcodIcon size={42} variant="black" />
+            <p className="kicker" style={{ margin: 0 }}>
+              Estándar internacional · hashcod
+            </p>
+          </div>
           <h2>{FIST278_STANDARD.id}</h2>
           <p className="subtitle">{FIST278_STANDARD.fullName}</p>
         </div>

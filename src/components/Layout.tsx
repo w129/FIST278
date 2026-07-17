@@ -12,6 +12,7 @@ import {
   Award,
 } from 'lucide-react';
 import { VectorBackground } from './VectorBackground';
+import { HashcodIcon } from './HashcodIcon';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -33,8 +34,8 @@ export function Layout() {
       <div className="app-shell">
         <aside className="sidebar">
           <div className="brand">
-            <div className="brand-mark" style={{ fontSize: '0.7rem', letterSpacing: '-0.02em' }}>
-              F278
+            <div className="brand-mark brand-mark-icon" title="hashcod">
+              <HashcodIcon size={28} variant="white" />
             </div>
             <div>
               <h1>FIST278</h1>
