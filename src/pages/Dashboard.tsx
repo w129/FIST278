@@ -45,9 +45,14 @@ export function Dashboard() {
             <strong>pass</strong>) exige un <strong>Certificado hashcod (HVC)</strong> vigente.
           </p>
         </div>
-        <Link to="/tokenize" className="btn btn-primary">
-          <Coins size={18} /> Tokenizar activo
-        </Link>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Link to="/registration" className="btn btn-primary">
+            100 Formularios de registro
+          </Link>
+          <Link to="/tokenize" className="btn btn-ghost">
+            <Coins size={18} /> Tokenizar activo
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-4" style={{ marginBottom: '1.25rem' }}>

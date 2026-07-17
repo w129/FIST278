@@ -10,12 +10,14 @@ import {
   Coins,
   Library,
   Award,
+  ClipboardList,
 } from 'lucide-react';
 import { VectorBackground } from './VectorBackground';
 import { HashcodIcon } from './HashcodIcon';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/registration', label: '100 Formularios', icon: ClipboardList },
   { to: '/tokenize', label: 'Tokenizar IA', icon: Coins },
   { to: '/registry', label: 'Registro tokens', icon: Library },
   { to: '/standard', label: 'Estándar FIST278', icon: Award },

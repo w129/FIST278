@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Coins, ShieldCheck, Sparkles } from 'lucide-react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ClipboardList, Coins, ShieldCheck, Sparkles } from 'lucide-react';
 import { useTokens } from '../context/TokenContext';
 import type { AiAssetKind } from '../types/token';
 
@@ -19,6 +19,7 @@ const KINDS: { value: AiAssetKind; label: string }[] = [
 export function Tokenize() {
   const { tokenize, stats } = useTokens();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,6 +34,22 @@ export function Tokenize() {
     useState<'proprietary' | 'open' | 'dual' | 'undecided'>('undecided');
   const [tags, setTags] = useState('IA, generado');
   const [language, setLanguage] = useState('es');
+
+  useEffect(() => {
+    const g = (k: string) => searchParams.get(k);
+    if (g('title')) setTitle(g('title')!);
+    if (g('content')) setContent(g('content')!);
+    if (g('description')) setDescription(g('description')!);
+    if (g('modelId')) setModelId(g('modelId')!);
+    if (g('prompt')) setPrompt(g('prompt')!);
+    if (g('steward')) setSteward(g('steward')!);
+    if (g('tags')) setTags(g('tags')!);
+    if (g('language')) setLanguage(g('language')!);
+    const lic = g('licenseIntent');
+    if (lic === 'proprietary' || lic === 'open' || lic === 'dual' || lic === 'undecided') {
+      setLicenseIntent(lic);
+    }
+  }, [searchParams]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -74,15 +91,20 @@ export function Tokenize() {
           <h2>Tokenizar activos generados por IA</h2>
           <p className="subtitle">
             Pega el output de un modelo y genera un token bajo el estándar internacional FIST278
-            (hashcod). Después emite el <strong>Certificado hashcod</strong> y valida: sin
-            certificado no hay pass.
+            (hashcod). Completa antes los <strong>100 formularios</strong> de registro si quieres
+            un dossier completo. Luego certificado hashcod y validación.
           </p>
         </div>
-        <div className="card" style={{ minWidth: 200, padding: '0.85rem 1rem' }}>
-          <div className="stat-label">Registro</div>
-          <div className="mono" style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-            {stats.total} tokens · {stats.validated} validados
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="card" style={{ minWidth: 200, padding: '0.85rem 1rem' }}>
+            <div className="stat-label">Registro tokens</div>
+            <div className="mono" style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+              {stats.total} tokens · {stats.validated} validados
+            </div>
           </div>
+          <Link to="/registration" className="btn btn-ghost btn-sm">
+            <ClipboardList size={14} /> 100 formularios de registro
+          </Link>
         </div>
       </div>
 

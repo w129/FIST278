@@ -14,6 +14,7 @@ import { Methodology } from './pages/Methodology';
 import { Knowledge } from './pages/Knowledge';
 import { MathLab } from './pages/MathLab';
 import { Standard } from './pages/Standard';
+import { RegistrationWizard } from './pages/RegistrationWizard';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route element={<Layout />}>
               <Route index element={<Dashboard />} />
               <Route path="tokenize" element={<Tokenize />} />
+              <Route path="registration" element={<RegistrationWizard />} />
               <Route path="registry" element={<TokenRegistry />} />
               <Route path="tokens/:id" element={<TokenDetail />} />
               <Route path="standard" element={<Standard />} />
